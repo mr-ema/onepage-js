@@ -1,0 +1,37 @@
+{
+  "name": "onepage-js",
+  "version": "0.0.1",
+  "main": "dist/onepage.js",
+  "type": "module",
+  "scripts": {
+    "build": "bun run rollup --config",
+    "build:docs": "bun run jsdoc src -c ./jsdoc.config.json",
+    "dev": "bun run ./dev-server.js",
+    "test": "bun test",
+    "test:dev": "bun test --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:mr-ema/onepage-js.git"
+  },
+  "keywords": [
+    "onepage",
+    "slides",
+    "slider",
+    "scroll",
+    "swipe"
+  ],
+  "files": [
+    "dist/onepage.js",
+    "package.json",
+    "README.md"
+  ],
+  "license": "0BSD",
+  "dependencies": {},
+  "devDependencies": {
+    "@rollup/plugin-terser": "^0.4.4",
+    "@types/bun": "^1.1.13",
+    "jsdoc": "~4.0.4",
+    "rollup": "^4.27.2"
+  }
+}

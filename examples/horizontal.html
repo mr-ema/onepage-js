@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head id="head">
+  <meta charset="UTF-8">
+  <meta name="description" content="One Page JS example">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title id="title">One Page JS</title>
+  <script type="text/javascript" src="../dist/onepage.js"></script>
+
+  <style>
+    h1 {
+      font-size: calc(2em + 2vw);
+      margin: 0;
+      padding: 1em 0 0 0;
+    }
+
+    .section {
+      color: #FFF;
+      text-align: center;
+    }
+
+    .box {
+      height: 60vh;
+      padding: 1em;
+      text-align: center;
+      background: #4E4E4E;
+      width: 400px;
+      margin: 1em;
+      border-radius: 0.36em;
+      font-size: 1.4em;
+    }
+
+    .section:nth-child(1) {
+      background-image: linear-gradient(128deg, #40AFFF, #3F61FF);
+    }
+
+    .section:nth-child(2) {
+      background-image: linear-gradient(128deg, #FF9A3F, #FF4B40);
+    }
+
+    .section:nth-child(3) {
+      background-image: linear-gradient(128deg, #FC40FF, #543FFF);
+    }
+  </style>
+</head>
+
+<body>
+  <main id="#onepage">
+    <section class="section">
+      <h1>Section 1</h1>
+    </section>
+
+    <section class="section">
+      <h1>Section 2</h1>
+    </section>
+
+    <section class="section">
+      <h1>Section 3</h1>
+    </section>
+
+  </main>
+
+  <script>
+    Onepage.setOptions({
+      scroll: {
+        direction: "horizontal",
+      }
+    });
+  </script>
+
+</body>
+
+</html>
