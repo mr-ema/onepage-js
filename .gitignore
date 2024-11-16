@@ -72,7 +72,6 @@ compile_commands.json
 cover
 coverage
 coverv
-dist
 esbuilddir
 examples/lotta-modules/bun-nofscache
 examples/lotta-modules/bun-old
