@@ -6,10 +6,10 @@ to navigate between sections with smooth transitions. It is lightweight,
 easy to integrate, and works with a variety of front-end frameworks.
 
 ## Navigation
-- [State](README#State)
-- [Javascript Support](<README#Javascript Support>)
-- [Features](README#Features)
-- [License](README#License)
+- [State](#state)
+- [Javascript Support](#javascript-support)
+- [Features](#features)
+- [License](#license)
 
 ## State
 OnePageJS is still in the early stages of development. While it provides
