@@ -248,12 +248,13 @@ export function getSliderListInElement(element) {
 
 /**
  * @param element {Element}
- * @returns {NodeListOf<Element>}
+ * @returns {NodeListOf<Element>|null}
  */
 export function getSingleSlidesInElementOrNull(element) {
     const slides = element.querySelectorAll("." + constants.SINGLE_SLIDE_CLASS_NAME);
+    if (slides.length >= 1) return slides;
 
-    return slides;
+    return null;
 }
 
 /**
