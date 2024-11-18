@@ -324,12 +324,13 @@ var Onepage = (function () {
 
         /**
          * @param element {Element}
-         * @returns {NodeListOf<Element>}
+         * @returns {NodeListOf<Element>|null}
          */
         function getSingleSlidesInElementOrNull(element) {
             const slides = element.querySelectorAll("." + constants.SINGLE_SLIDE_CLASS_NAME);
+            if (slides.length >= 1) return slides;
 
-            return slides;
+            return null;
         }
 
         /**
