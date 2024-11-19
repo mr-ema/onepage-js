@@ -12,7 +12,7 @@
 // OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
-import { expect, test, describe } from "bun:test";
+import { expect, test, describe, beforeEach } from "bun:test";
 
 
 describe("toKebabCase", () => {
@@ -720,5 +720,108 @@ describe("getRootNodeOrThrow", () => {
         document.body.innerHTML = ""; // Clear body to simulate missing element
 
         expect(() => getRootNodeOrThrow()).toThrowError(new Error(`${constants.ROOT_ID_NAME} element not founded in DOOM`));
+    });
+});
+
+describe("isSection", () => {
+    const constants = require("../../src/constans.js").default;
+    const { isSection } = require("../../src/utils.js");
+
+    test("returns true when element has the SECTION_CLASS_NAME", () => {
+        const sectionElement = document.createElement("div");
+        sectionElement.classList.add(constants.SECTION_CLASS_NAME);
+        expect(isSection(sectionElement)).toBe(true);
+    });
+
+    test("returns false when element does not have the SECTION_CLASS_NAME", () => {
+        const nonSectionElement = document.createElement("div");
+        expect(isSection(nonSectionElement)).toBe(false);
+    });
+});
+
+describe("isSlider", () => {
+    const constants = require("../../src/constans.js").default;
+    const { isSlider } = require("../../src/utils.js");
+
+    test("returns true when element has the SLIDER_WRAPPER_CLASS_NAME", () => {
+        const sliderElement = document.createElement("div");
+        sliderElement.classList.add(constants.SLIDER_WRAPPER_CLASS_NAME);
+        expect(isSlider(sliderElement)).toBe(true);
+    });
+
+    test("returns false when element does not have the SLIDER_WRAPPER_CLASS_NAME", () => {
+        const nonSliderElement = document.createElement("div");
+        expect(isSlider(nonSliderElement)).toBe(false);
+    });
+});
+
+describe("isSlide", () => {
+    const constants = require("../../src/constans.js").default;
+    const { isSlide } = require("../../src/utils.js");
+
+    test("returns true when element has the SINGLE_SLIDE_CLASS_NAME", () => {
+        const slideElement = document.createElement("div");
+        slideElement.classList.add(constants.SINGLE_SLIDE_CLASS_NAME);
+        expect(isSlide(slideElement)).toBe(true);
+    });
+
+    test("returns false when element does not have the SINGLE_SLIDE_CLASS_NAME", () => {
+        const nonSlideElement = document.createElement("div");
+        expect(isSlide(nonSlideElement)).toBe(false);
+    });
+});
+
+describe("isElementBeforeOrAfter", () => {
+    const { isElementBeforeOrAfter } = require("../../src/utils.js");
+
+    /** @type {Element} */ let parentElement;
+    /** @type {Element} */ let element1;
+    /** @type {Element} */ let element2;
+    /** @type {Element} */ let element3;
+
+    beforeEach(() => {
+        parentElement = document.createElement("div");
+        element1 = document.createElement("div");
+        element2 = document.createElement("div");
+        element3 = document.createElement("div");
+
+        parentElement.appendChild(element1);
+        parentElement.appendChild(element2);
+        parentElement.appendChild(element3);
+        document.body.appendChild(parentElement);
+    });
+
+    test("returns 'before' if element1 is before element2", () => {
+        expect(isElementBeforeOrAfter(element1, element2)).toBe("before");
+    });
+
+    test("returns 'after' if element3 is after element2", () => {
+        expect(isElementBeforeOrAfter(element3, element2)).toBe("after");
+    });
+
+    test("returns 'same' if both elements are the same", () => {
+        expect(isElementBeforeOrAfter(element1, element1)).toBe("same");
+    });
+
+    test("returns -1 if the elements are not direct siblings", () => {
+        const nonSiblingElement = document.createElement("div");
+        document.body.appendChild(nonSiblingElement);
+        expect(isElementBeforeOrAfter(element1, nonSiblingElement)).toBe(-1);
+    });
+
+    test("returns 'before' if the element comes before its sibling", () => {
+        element1.classList.add("first");
+        element2.classList.add("second");
+        element2.before(element1);
+
+        expect(isElementBeforeOrAfter(element1, element2)).toBe("before");
+    });
+
+    test("returns 'after' if the element comes after its sibling", () => {
+        element1.classList.add("first");
+        element2.classList.add("second");
+        parentElement.appendChild(element1); // Appends element1 after element2
+
+        expect(isElementBeforeOrAfter(element1, element2)).toBe("after");
     });
 });
