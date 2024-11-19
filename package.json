@@ -29,6 +29,7 @@
   "license": "0BSD",
   "dependencies": {},
   "devDependencies": {
+    "@happy-dom/global-registrator": "^15.11.6",
     "@rollup/plugin-terser": "^0.4.4",
     "@types/bun": "^1.1.13",
     "jsdoc": "~4.0.4",
