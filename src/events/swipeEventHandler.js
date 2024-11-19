@@ -16,7 +16,6 @@ import { never } from "../assert.js";
 import constants from "../constans.js";
 import Logger from "../logger.js";
 import settings from "../settings.js";
-import utils from "../utils.js";
 
 
 /**
@@ -167,53 +166,28 @@ const SwipeEventHandler = (() => {
         return (has_touch || (has_pointer && settings.scroll.swipeScroll));
     }
 
-    /** @param event {TouchEvent} */
-    function _handlePointerTouch(event) {
-        /**
-         * @param element {Element}
-         * @returns {boolean}
-         */
-        function _hasOverflowScroll(element) {
-            if (settings.scroll.overflowScroll) {
-                let scrollable = utils.tryToGetScrollableParentElement(element);
-                if (scrollable !== null) {
-                    const axis = getAxis("vertical");
-
-                    if (axis === -1) return !(utils.hasReachedStartOfScroll(scrollable));
-                    if (axis === 1) return !(utils.hasReachedEndOfScroll(scrollable));
-                }
-            }
-
-            return false;
-        }
-
-        const target = /** @type {Element | null} */ (event.target);
-        if (target !== null && _hasOverflowScroll(target) === false) {
-            event.preventDefault()
-        }
+    function _isTouchDevice() {
+        return (window.matchMedia && window.matchMedia("(pointer: coarse)").matches);
     }
 
     function startListen() {
         if (_isListen) return;
 
-        if ((window?.PointerEvent && settings.scroll.swipeScroll) || window?.TouchEvent) {
+        // Add pointer event listeners for non-touch devices if swipe scroll is enabled
+        if ((window?.PointerEvent && settings.scroll.swipeScroll) && !_isTouchDevice()) {
             document.addEventListener("pointerdown", _handleSwipeStart, false);
             document.addEventListener("pointermove", _handleSwipeMove, false);
             document.addEventListener("pointerup", _handleSwipeEnd, false);
             document.addEventListener("pointercancel", _handleSwipeEnd, false);
 
-            if (window?.TouchEvent) {
-                document.addEventListener("touchstart", _handlePointerTouch, { passive: false });
-            }
-
             Logger.debug("SwipeEventHandler: pointer event listeners [started]");
         }
 
-        // Fallback to touch if pointer event is not supported (android/ios)
-        if (window?.TouchEvent && (typeof window?.PointerEvent) === "undefined") {
+        // Add touch event listeners for touch-enabled devices
+        if (window?.TouchEvent && _isTouchDevice()) {
             document.addEventListener("touchstart", _handleSwipeStart, false);
             document.addEventListener("touchend", _handleSwipeEnd, false);
-            document.addEventListener("touchmove", event => event.preventDefault(), false);
+            document.addEventListener("touchmove", _handleSwipeMove, false);
             document.addEventListener("touchcancel", _handleSwipeEnd, false);
 
             Logger.debug("SwipeEventHandler: touch event listeners [started]");
@@ -225,24 +199,22 @@ const SwipeEventHandler = (() => {
     function stopListen() {
         if (!_isListen) return;
 
-        if ((window?.PointerEvent && settings.scroll.swipeScroll) || window?.TouchEvent) {
+        // Remove pointer event listeners for non-touch devices if swipe scroll is enabled
+        if ((window?.PointerEvent && settings.scroll.swipeScroll) && typeof window?.TouchEvent === "undefined") {
             document.removeEventListener("pointerdown", _handleSwipeStart, false);
             document.removeEventListener("pointermove", _handleSwipeMove, false);
             document.removeEventListener("pointerup", _handleSwipeEnd, false);
             document.removeEventListener("pointercancel", _handleSwipeEnd, false);
 
-            if (window?.TouchEvent) {
-                document.removeEventListener("touchstart", _handlePointerTouch);
-            }
-
             Logger.debug("SwipeEventHandler: pointer event listeners [stoped]");
         }
 
-        // Fallback to touch if pointer event is not supported (android/ios)
-        if (window?.TouchEvent && (typeof window?.PointerEvent) === "undefined") {
+        // Remove touch event listeners for touch-enabled devices
+        if (window?.TouchEvent) {
             document.removeEventListener("touchstart", _handleSwipeStart, false);
             document.removeEventListener("touchend", _handleSwipeEnd, false);
-            document.removeEventListener("touchmove", event => event.preventDefault(), false);
+            document.removeEventListener("touchmove", _handleSwipeMove, false);
+            document.removeEventListener("touchcancel", _handleSwipeEnd, false);
 
             Logger.debug("SwipeEventHandler: touch event listeners [stopped]");
         }
