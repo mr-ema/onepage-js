@@ -53,7 +53,7 @@ export function removeClassName(elem, name) {
 export function isParentElementScrollable(element, depth) {
     let parent = element.parentElement;
 
-    for (let level = depth; level <= depth; level += 1) {
+    for (let level = depth; level <= depth;) {
         if (parent == null) break;
 
         const hasVerticalScroll = parent.scrollHeight > parent.clientHeight;
@@ -65,7 +65,9 @@ export function isParentElementScrollable(element, depth) {
         parent = parent?.parentElement;
 
         // Keep Iterating Until There Is No More Parents Elements
-        if (depth === -1) level = depth;
+        if (depth !== -1) {
+            level += 1;
+        }
     }
 
     return false;
@@ -95,7 +97,7 @@ export function isElementScrollable(element) {
 export function tryToGetScrollableParentElement(element, depth = 0) {
     let parent = element.parentElement;
 
-    for (let level = depth; level <= depth; level += 1) {
+    for (let level = depth; level <= depth;) {
         if (parent == null) break;
 
         const hasVerticalScroll = parent.scrollHeight > parent.clientHeight;
@@ -107,7 +109,9 @@ export function tryToGetScrollableParentElement(element, depth = 0) {
         parent = parent?.parentElement;
 
         // Keep Iterating Until There Is No More Parents Elements
-        if (depth === -1) level = depth;
+        if (depth !== -1) {
+            level += 1;
+        }
     }
 
     return null;
@@ -121,7 +125,7 @@ export function tryToGetScrollableParentElement(element, depth = 0) {
 export function slideParentCtnOrNull(slide, depth = 0) {
     let parent = slide.parentElement;
 
-    for (let level = depth; level <= depth; level += 1) {
+    for (let level = depth; level <= depth;) {
         if (parent == null) break;
 
         if (parent.classList.contains(constants.SLIDER_WRAPPER_CLASS_NAME)) {
@@ -131,7 +135,9 @@ export function slideParentCtnOrNull(slide, depth = 0) {
         parent = parent?.parentElement;
 
         // Keep Iterating Until There Is No More Parents Elements
-        if (depth === -1) level = depth;
+        if (depth !== -1) {
+            level += 1;
+        }
     }
 
     return null;
@@ -145,7 +151,7 @@ export function slideParentCtnOrNull(slide, depth = 0) {
 export function sectionParentOrNull(element, depth = 0) {
     let parent = element.parentElement;
 
-    for (let level = depth; level <= depth; level += 1) {
+    for (let level = depth; level <= depth;) {
         if (parent == null) break;
 
         if (parent.classList.contains(constants.SECTION_CLASS_NAME)) {
@@ -155,7 +161,10 @@ export function sectionParentOrNull(element, depth = 0) {
         parent = parent?.parentElement;
 
         // Keep Iterating Until There Is No More Parents Elements
-        if (depth === -1) level = depth;
+        if (depth !== -1) {
+            level += 1;
+        }
+
     }
 
     return null;
