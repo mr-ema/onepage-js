@@ -340,7 +340,7 @@ export function extractClassName(raw) {
     const matches = raw.match(regex);
     if (matches) {
         // Clean up matches to remove the leading dot and trailing `{`
-        return matches.map(match => match.replace(/^\.\s*|[{]\s*$/g, ''));
+        return matches.map(match => match.replace(/^\.\s*|\s*{\s*$/g, ""));
     }
 
     return [];
