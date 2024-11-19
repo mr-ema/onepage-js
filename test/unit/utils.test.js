@@ -373,3 +373,203 @@ describe("tryToGetScrollableParentElement", () => {
         expect(tryToGetScrollableParentElement(child, -1)).toBe(container);
     });
 });
+
+describe("slideParentCtnOrNull", () => {
+    const constants = require("../../src/constans.js").default;
+    const { slideParentCtnOrNull } = require("../../src/utils.js");
+
+    test("returns parent with SLIDER_WRAPPER_CLASS_NAME when found", () => {
+        const slide = document.createElement("div");
+        const parent = document.createElement("div");
+        parent.classList.add(constants.SLIDER_WRAPPER_CLASS_NAME);
+        parent.appendChild(slide);
+        document.body.appendChild(parent);
+
+        const result = slideParentCtnOrNull(slide);
+        expect(result).toBe(parent);
+    });
+
+    test("returns null when no parent with SLIDER_WRAPPER_CLASS_NAME is found", () => {
+        const slide = document.createElement("div");
+        const parent = document.createElement("div");
+        parent.appendChild(slide);
+        document.body.appendChild(parent);
+
+        const result = slideParentCtnOrNull(slide);
+        expect(result).toBeNull();
+    });
+
+    test("returns null when no parent element exists", () => {
+        const slide = document.createElement("div");
+        document.body.appendChild(slide);
+
+        const result = slideParentCtnOrNull(slide);
+        expect(result).toBeNull();
+    });
+
+    test("supports depth argument", () => {
+        const slide = document.createElement("div");
+        const parent1 = document.createElement("div");
+        const parent2 = document.createElement("div");
+        parent2.classList.add(constants.SLIDER_WRAPPER_CLASS_NAME);
+        parent1.appendChild(parent2);
+        parent2.appendChild(slide);
+        document.body.appendChild(parent1);
+
+        const result = slideParentCtnOrNull(slide, 1); // Depth = 1
+        expect(result).toBe(parent2);
+    });
+
+    test("handles infinite depth (depth = -1)", () => {
+        const slide = document.createElement("div");
+        const parent1 = document.createElement("div");
+        const parent2 = document.createElement("div");
+        parent2.classList.add(constants.SLIDER_WRAPPER_CLASS_NAME);
+        parent1.appendChild(parent2);
+        parent2.appendChild(slide);
+        document.body.appendChild(parent1);
+
+        const result = slideParentCtnOrNull(slide, -1); // Infinite depth
+        expect(result).toBe(parent2);
+    });
+});
+
+describe("sectionParentOrNull", () => {
+    const constants = require("../../src/constans.js").default;
+    const { sectionParentOrNull } = require("../../src/utils.js");
+
+    test("returns parent with SECTION_CLASS_NAME when found", () => {
+        const element = document.createElement("div");
+        const parent = document.createElement("div");
+        parent.classList.add(constants.SECTION_CLASS_NAME);
+        parent.appendChild(element);
+        document.body.appendChild(parent);
+
+        const result = sectionParentOrNull(element);
+        expect(result).toBe(parent);
+    });
+
+    test("returns null when no parent with SECTION_CLASS_NAME is found", () => {
+        const element = document.createElement("div");
+        const parent = document.createElement("div");
+        parent.appendChild(element);
+        document.body.appendChild(parent);
+
+        const result = sectionParentOrNull(element);
+        expect(result).toBeNull();
+    });
+
+    test("returns null when no parent element exists", () => {
+        const element = document.createElement("div");
+        document.body.appendChild(element);
+
+        const result = sectionParentOrNull(element);
+        expect(result).toBeNull();
+    });
+
+    test("supports depth argument", () => {
+        const element = document.createElement("div");
+        const parent1 = document.createElement("div");
+        const parent2 = document.createElement("div");
+        parent2.classList.add(constants.SECTION_CLASS_NAME);
+        parent1.appendChild(parent2);
+        parent2.appendChild(element);
+        document.body.appendChild(parent1);
+
+        const result = sectionParentOrNull(element, 1); // Depth = 1
+        expect(result).toBe(parent2);
+    });
+
+    test("handles infinite depth (depth = -1)", () => {
+        const element = document.createElement("div");
+        const parent1 = document.createElement("div");
+        const parent2 = document.createElement("div");
+        parent2.classList.add(constants.SECTION_CLASS_NAME);
+        parent1.appendChild(parent2);
+        parent2.appendChild(element);
+        document.body.appendChild(parent1);
+
+        const result = sectionParentOrNull(element, -1); // Infinite depth
+        expect(result).toBe(parent2);
+    });
+});
+
+describe("hasReachedEndOfScroll", () => {
+    const { hasReachedEndOfScroll } = require("../../src/utils.js");
+
+    test("returns true when at the end of vertical scroll", () => {
+        const element = document.createElement("div");
+        Object.defineProperty(element, "scrollTop", { value: 100 });
+        Object.defineProperty(element, "clientHeight", { value: 50 });
+        Object.defineProperty(element, "scrollHeight", { value: 150 });
+
+        expect(hasReachedEndOfScroll(element, "vertical")).toBe(true);
+    });
+
+    test("returns false when not at the end of vertical scroll", () => {
+        const element = document.createElement("div");
+        Object.defineProperty(element, "scrollTop", { value: 50 });
+        Object.defineProperty(element, "clientHeight", { value: 50 });
+        Object.defineProperty(element, "scrollHeight", { value: 150 });
+
+        expect(hasReachedEndOfScroll(element, "vertical")).toBe(false);
+    });
+
+    test("returns true when at the end of horizontal scroll", () => {
+        const element = document.createElement("div");
+        Object.defineProperty(element, "scrollLeft", { value: 100 });
+        Object.defineProperty(element, "clientWidth", { value: 50 });
+        Object.defineProperty(element, "scrollWidth", { value: 150 });
+
+        expect(hasReachedEndOfScroll(element, "horizontal")).toBe(true);
+    });
+
+    test("returns false when not at the end of horizontal scroll", () => {
+        const element = document.createElement("div");
+        Object.defineProperty(element, "scrollLeft", { value: 50 });
+        Object.defineProperty(element, "clientWidth", { value: 50 });
+        Object.defineProperty(element, "scrollWidth", { value: 150 });
+
+        expect(hasReachedEndOfScroll(element, "horizontal")).toBe(false);
+    });
+});
+
+describe("hasReachedStartOfScroll", () => {
+    const { hasReachedStartOfScroll } = require("../../src/utils.js");
+
+    test("returns true when at the start of vertical scroll", () => {
+        const element = document.createElement("div");
+        Object.defineProperty(element, "scrollTop", { value: 0 });
+        Object.defineProperty(element, "clientHeight", { value: 50 });
+        Object.defineProperty(element, "scrollHeight", { value: 150 });
+
+        expect(hasReachedStartOfScroll(element, "vertical")).toBe(true);
+    });
+
+    test("returns false when not at the start of vertical scroll", () => {
+        const element = document.createElement("div");
+        Object.defineProperty(element, "scrollTop", { value: 50 });
+        Object.defineProperty(element, "clientHeight", { value: 50 });
+        Object.defineProperty(element, "scrollHeight", { value: 150 });
+
+        expect(hasReachedStartOfScroll(element, "vertical")).toBe(false);
+    });
+
+    test("returns true when at the start of horizontal scroll", () => {
+        const element = document.createElement("div");
+        Object.defineProperty(element, "scrollLeft", { value: 0 });
+        Object.defineProperty(element, "clientWidth", { value: 50 });
+        Object.defineProperty(element, "scrollWidth", { value: 150 });
+
+        expect(hasReachedStartOfScroll(element, "horizontal")).toBe(true);
+    });
+
+    test("returns false when not at the start of horizontal scroll", () => {
+        const element = document.createElement("div");
+        Object.defineProperty(element, "scrollLeft", { value: 50 });
+        Object.defineProperty(element, "clientWidth", { value: 50 });
+        Object.defineProperty(element, "scrollWidth", { value: 150 });
+
+        expect(hasReachedStartOfScroll(element, "horizontal")).toBe(false);
+    });
+});
