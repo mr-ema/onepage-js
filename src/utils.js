@@ -285,9 +285,9 @@ export function deepMerge(target, source) {
         if (source.hasOwnProperty(key)) {
             if (source[key] instanceof Object && target[key] instanceof Object) {
                 target[key] = deepMerge(target[key], source[key]);
+            } else {
+                target[key] = source[key];
             }
-        } else {
-            target[key] = source[key];
         }
     }
 
