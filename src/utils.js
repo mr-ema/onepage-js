@@ -176,11 +176,13 @@ export function sectionParentOrNull(element, depth = 0) {
  * @returns {boolean}
  */
 export function hasReachedEndOfScroll(element, direction = "vertical") {
+    const tolerance = 1; // Allow a small margin for rounding errors
+
     switch (direction.toLowerCase()) {
         case "vertical":
-            return ((element.scrollTop + element.clientHeight) >= element.scrollHeight);
+            return ((element.scrollTop + element.clientHeight + tolerance) >= element.scrollHeight);
         case "horizontal":
-            return ((element.scrollLeft + element.clientWidth) >= element.scrollWidth);
+            return ((element.scrollLeft + element.clientWidth + tolerance) >= element.scrollWidth);
     }
 
     return false;
@@ -192,11 +194,13 @@ export function hasReachedEndOfScroll(element, direction = "vertical") {
  * @returns {boolean}
  */
 export function hasReachedStartOfScroll(element, direction = "vertical") {
+    const tolerance = 1; // Allow a small margin for rounding errors
+
     switch (direction.toLowerCase()) {
         case "vertical":
-            return (element.scrollTop === 0);
+            return (element.scrollTop <= tolerance);
         case "horizontal":
-            return (element.scrollLeft === 0);
+            return (element.scrollLeft <= tolerance);
     }
 
     return false;
@@ -406,7 +410,7 @@ export function isElementBeforeOrAfter(element, sibling) {
     if (element.parentElement !== sibling.parentElement) return -1;
 
     const position = element.compareDocumentPosition(sibling);
-    if (position & Node.DOCUMENT_POSITION_FOLLOWING ) {
+    if (position & Node.DOCUMENT_POSITION_FOLLOWING) {
         return "before";
     } else if (position & Node.DOCUMENT_POSITION_PRECEDING) {
         return "after";
