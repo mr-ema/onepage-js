@@ -573,3 +573,152 @@ describe("hasReachedStartOfScroll", () => {
         expect(hasReachedStartOfScroll(element, "horizontal")).toBe(false);
     });
 });
+
+describe("wrapAllChildrenOf", () => {
+    const { wrapAllChildrenOf } = require("../../src/utils.js");
+
+    test("wraps all children in a new div wrapper", () => {
+        const parentElement = document.createElement("div");
+        const child1 = document.createElement("span");
+        const child2 = document.createElement("p");
+        parentElement.appendChild(child1);
+        parentElement.appendChild(child2);
+        document.body.appendChild(parentElement);
+
+        const wrapper = wrapAllChildrenOf(parentElement);
+        expect(wrapper.tagName).toBe("DIV");
+        expect(wrapper.children.length).toBe(2);
+        expect(wrapper.contains(child1)).toBe(true);
+        expect(wrapper.contains(child2)).toBe(true);
+    });
+
+    test("uses custom wrapper tag name", () => {
+        const parentElement = document.createElement("div");
+        const child1 = document.createElement("span");
+        parentElement.appendChild(child1);
+        document.body.appendChild(parentElement);
+
+        const wrapper = wrapAllChildrenOf(parentElement, "section");
+        expect(wrapper.tagName).toBe("SECTION");
+    });
+
+    test("returns the wrapper element", () => {
+        const parentElement = document.createElement("div");
+        const child1 = document.createElement("span");
+        parentElement.appendChild(child1);
+        document.body.appendChild(parentElement);
+
+        const wrapper = wrapAllChildrenOf(parentElement);
+        expect(wrapper).toBeInstanceOf(Element);
+    });
+});
+
+describe("wrapChildrenInTag", () => {
+    const { wrapChildrenInTag } = require("../../src/utils.js");
+
+    test("wraps children in a new div wrapper", () => {
+        const child1 = document.createElement("span");
+        const child2 = document.createElement("p");
+        const wrapper = wrapChildrenInTag([child1, child2]);
+
+        expect(wrapper.tagName).toBe("DIV");
+        expect(wrapper.children.length).toBe(2);
+        expect(wrapper.contains(child1)).toBe(true);
+        expect(wrapper.contains(child2)).toBe(true);
+    });
+
+    test("uses custom wrapper tag name", () => {
+        const child1 = document.createElement("span");
+        const child2 = document.createElement("p");
+        const wrapper = wrapChildrenInTag([child1, child2], "section");
+
+        expect(wrapper.tagName).toBe("SECTION");
+    });
+
+    test("returns the wrapper element", () => {
+        const child1 = document.createElement("span");
+        const wrapper = wrapChildrenInTag([child1]);
+        expect(wrapper).toBeInstanceOf(Element);
+    });
+});
+
+describe("getSliderListInElement", () => {
+    const constants = require("../../src/constans.js").default;
+    const { getSliderListInElement } = require("../../src/utils.js");
+
+    test("returns sliders inside the element", () => {
+        const parentElement = document.createElement("div");
+        const slider1 = document.createElement("div");
+        const slider2 = document.createElement("div");
+        slider1.classList.add(constants.SLIDER_WRAPPER_CLASS_NAME);
+        slider2.classList.add(constants.SLIDER_WRAPPER_CLASS_NAME);
+        parentElement.appendChild(slider1);
+        parentElement.appendChild(slider2);
+        document.body.appendChild(parentElement);
+
+        const sliders = getSliderListInElement(parentElement);
+        expect(sliders.length).toBe(2);
+        expect(sliders[0]).toBe(slider1);
+        expect(sliders[1]).toBe(slider2);
+    });
+
+    test("returns empty NodeList when no sliders found", () => {
+        const parentElement = document.createElement("div");
+        document.body.appendChild(parentElement);
+
+        const sliders = getSliderListInElement(parentElement);
+        expect(sliders.length).toBe(0);
+    });
+});
+
+describe("getSingleSlidesInElementOrNull", () => {
+    const constants = require("../../src/constans.js").default;
+    const { getSingleSlidesInElementOrNull } = require("../../src/utils.js");
+
+    test("returns slides if found", () => {
+        const parentElement = document.createElement("div");
+        const slide1 = document.createElement("div");
+        const slide2 = document.createElement("div");
+        slide1.classList.add(constants.SINGLE_SLIDE_CLASS_NAME);
+        slide2.classList.add(constants.SINGLE_SLIDE_CLASS_NAME);
+        parentElement.appendChild(slide1);
+        parentElement.appendChild(slide2);
+        document.body.appendChild(parentElement);
+
+        const slides = getSingleSlidesInElementOrNull(parentElement);
+        expect(slides).not.toBeNull();
+        if (slides !== null) {
+            expect(slides.length).toBe(2);
+            expect(slides[0]).toBe(slide1);
+            expect(slides[1]).toBe(slide2);
+        }
+    });
+
+    test("returns null when no slides found", () => {
+        const parentElement = document.createElement("div");
+        document.body.appendChild(parentElement);
+
+        const slides = getSingleSlidesInElementOrNull(parentElement);
+        expect(slides).toBeNull();
+    });
+});
+
+describe("getRootNodeOrThrow", () => {
+    const constants = require("../../src/constans.js").default;
+    const { getRootNodeOrThrow } = require("../../src/utils.js");
+
+    test("returns root element when found", () => {
+        const rootElement = document.createElement("div");
+        rootElement.id = "#" + constants.ROOT_ID_NAME;
+        document.body.appendChild(rootElement);
+
+        const result = getRootNodeOrThrow();
+        expect(result).toBe(rootElement);
+    });
+
+    test("throws error when root element is not found", () => {
+        document.body.innerHTML = ""; // Clear body to simulate missing element
+
+        expect(() => getRootNodeOrThrow()).toThrowError(new Error(`${constants.ROOT_ID_NAME} element not founded in DOOM`));
+    });
+});
