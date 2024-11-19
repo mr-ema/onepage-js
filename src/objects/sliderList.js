@@ -29,7 +29,20 @@ export default function SliderList(section) {
         const sliders = utils.getSliderListInElement(section);
         const aloneSlides = utils.getSingleSlidesInElementOrNull(section);
         if (aloneSlides !== null) {
-            sliderList.push(Slider(aloneSlides));
+            let shouldAdd = (() => {
+                for (const idx in aloneSlides) {
+                    const slideParent = aloneSlides[idx].parentElement;
+                    if (slideParent !== null) {
+                        return !utils.isSlider(/** @type {Element} */(slideParent));
+                    }
+                }
+
+                return true;
+            })();
+
+            if (shouldAdd) {
+                sliderList.push(Slider(aloneSlides));
+            }
         }
 
         sliders.forEach(slider => {
