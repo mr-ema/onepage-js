@@ -13,7 +13,7 @@
 
 
 import { expect, test, describe } from "bun:test";
-import { toKebabCase } from "../../src/utils.js";
+import { toKebabCase, deepMerge } from "../../src/utils.js";
 
 
 describe("toKebabCase", () => {
@@ -47,5 +47,81 @@ describe("toKebabCase", () => {
 
     test("handles strings with no transformation needed", () => {
         expect(toKebabCase("already-kebab-case")).toBe("already-kebab-case");
+    });
+});
+
+describe("deepMerge", () => {
+    test("merges flat objects", () => {
+        const target = { a: 1, b: 2 };
+        const source = { b: 3, c: 4 };
+        const result = deepMerge(target, source);
+
+        expect(result).toEqual({ a: 1, b: 3, c: 4 });
+    });
+
+    test("merges nested objects", () => {
+        const target = { a: 1, b: { x: 10, y: 20 } };
+        const source = { b: { y: 30, z: 40 }, c: 4 };
+        const result = deepMerge(target, source);
+
+        expect(result).toEqual({ a: 1, b: { x: 10, y: 30, z: 40 }, c: 4 });
+    });
+
+    test("merges when target has missing keys", () => {
+        const target = {};
+        const source = { a: 1, b: 2 };
+        const result = deepMerge(target, source);
+
+        expect(result).toEqual({ a: 1, b: 2 });
+    });
+
+    test("merges when source has missing keys", () => {
+        const target = { a: 1, b: 2 };
+        const source = {};
+        const result = deepMerge(target, source);
+
+        expect(result).toEqual({ a: 1, b: 2 });
+    });
+
+    test("handles deeply nested structures", () => {
+        const target = { a: { b: { c: 1 } } };
+        const source = { a: { b: { d: 2 } } };
+        const result = deepMerge(target, source);
+
+        expect(result).toEqual({ a: { b: { c: 1, d: 2 } } });
+    });
+
+    test("overwrites non-object properties", () => {
+        const target = { a: { b: 1 } };
+        const source = { a: 2 };
+        const result = deepMerge(target, source);
+
+        expect(result).toEqual({ a: 2 });
+    });
+
+    test("handles empty target and source", () => {
+        const target = {};
+        const source = {};
+        const result = deepMerge(target, source);
+
+        expect(result).toEqual({});
+    });
+
+    test("handles arrays gracefully (does not merge)", () => {
+        const target = { a: [1, 2, 3] };
+        const source = { a: [4, 5, 6] };
+        const result = deepMerge(target, source);
+
+        expect(result).toEqual({ a: [4, 5, 6] });
+    });
+
+    test("preserves references for identical keys", () => {
+        const sharedObject = { shared: true };
+        const target = { a: sharedObject };
+        const source = { a: sharedObject };
+
+        /** @type {*} */
+        const result = deepMerge(target, source);
+        expect(result.a).toBe(sharedObject);
     });
 });
