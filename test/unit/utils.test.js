@@ -204,3 +204,172 @@ describe("addPrefixToClassNames", () => {
         expect(result).toBe("body { color: blue; }");
     });
 });
+
+describe("addClassName", () => {
+    const { addClassName } = require("../../src/utils.js");
+
+    test("adds a class to an element", () => {
+        const elem = document.createElement("div");
+        addClassName(elem, "test-class");
+
+        expect(elem.classList.contains("test-class")).toBe(true);
+    });
+
+    test("does not throw if the class already exists", () => {
+        const elem = document.createElement("div");
+        elem.classList.add("test-class");
+
+        addClassName(elem, "test-class");
+
+        expect(elem.classList.contains("test-class")).toBe(true); // Ensure it still exists
+    });
+});
+
+describe("removeClassName", () => {
+    const { removeClassName } = require("../../src/utils.js");
+
+    test("removes a class from an element", () => {
+        const elem = document.createElement("div");
+        elem.classList.add("test-class");
+
+        removeClassName(elem, "test-class");
+
+        expect(elem.classList.contains("test-class")).toBe(false);
+    });
+
+    test("does not throw if the class does not exist", () => {
+        const elem = document.createElement("div");
+
+        removeClassName(elem, "nonexistent-class");
+
+        expect(elem.classList.contains("nonexistent-class")).toBe(false); // Ensure it's still not there
+    });
+});
+
+describe("isParentElementScrollable", () => {
+    const { isParentElementScrollable } = require("../../src/utils.js");
+
+    test("returns true if a parent element is scrollable", () => {
+        const container = document.createElement("div");
+        const child = document.createElement("div");
+
+        // Simulate scroll
+        Object.defineProperty(container, "scrollHeight", { value: 200 });
+        Object.defineProperty(container, "clientHeight", { value: 100 });
+
+        container.appendChild(child);
+        document.body.appendChild(container);
+
+        expect(isParentElementScrollable(child, 1)).toBe(true);
+    });
+
+    test("returns false if no scrollable parent exists", () => {
+        const container = document.createElement("div");
+        const child = document.createElement("div");
+
+        container.style.width = "100px";
+        container.style.height = "100px";
+        child.style.width = "50px";
+        child.style.height = "50px";
+
+        container.appendChild(child);
+        document.body.appendChild(container);
+
+        expect(isParentElementScrollable(child, 1)).toBe(false);
+    });
+
+    test("traverses indefinitely if depth is -1", () => {
+        const container = document.createElement("div");
+        const middle = document.createElement("div");
+        const child = document.createElement("div");
+
+        // Simulate scroll
+        Object.defineProperty(container, "scrollHeight", { value: 200 });
+        Object.defineProperty(container, "clientHeight", { value: 100 });
+
+        container.appendChild(middle);
+        middle.appendChild(child);
+        document.body.appendChild(container);
+
+        expect(isParentElementScrollable(child, -1)).toBe(true);
+    });
+});
+
+describe("isElementScrollable", () => {
+    const { isElementScrollable } = require("../../src/utils.js");
+
+    test("returns true if the element itself is scrollable", () => {
+        const element = document.createElement("div");
+
+        // Simulate scroll
+        Object.defineProperty(element, "scrollHeight", { value: 200 });
+        Object.defineProperty(element, "clientHeight", { value: 100 });
+
+        expect(isElementScrollable(element)).toBe(true);
+    });
+
+    test("returns false if the element itself is not scrollable", () => {
+        const element = document.createElement("div");
+        element.style.width = "100px";
+        element.style.height = "100px";
+
+        const child = document.createElement("div");
+        child.style.width = "50px";
+        child.style.height = "50px";
+        element.appendChild(child);
+
+        expect(isElementScrollable(element)).toBe(false);
+    });
+});
+
+describe("tryToGetScrollableParentElement", () => {
+    const { tryToGetScrollableParentElement } = require("../../src/utils.js");
+
+    test("returns the first scrollable parent element", () => {
+        const container = document.createElement("div");
+        const child = document.createElement("div");
+
+        // Simulate scroll
+        Object.defineProperty(container, "scrollHeight", { value: 200 });
+        Object.defineProperty(container, "clientHeight", { value: 100 });
+
+        container.appendChild(child);
+        document.body.appendChild(container);
+
+        expect(tryToGetScrollableParentElement(child, 1)).toBe(container);
+    });
+
+    test("returns null if no scrollable parent exists", () => {
+        const container = document.createElement("div");
+        const child = document.createElement("div");
+
+        container.style.width = "100px";
+        container.style.height = "100px";
+        child.style.width = "50px";
+        child.style.height = "50px";
+
+        container.appendChild(child);
+        document.body.appendChild(container);
+
+        expect(tryToGetScrollableParentElement(child, 1)).toBeNull();
+    });
+
+    test("traverses indefinitely if depth is -1", () => {
+        const container = document.createElement("div");
+        const middle = document.createElement("div");
+        const child = document.createElement("div");
+
+        // Simulate scroll
+        Object.defineProperty(container, "scrollHeight", { value: 200 });
+        Object.defineProperty(container, "clientHeight", { value: 100 });
+
+        expect(container.scrollHeight).toBeGreaterThan(0);
+        expect(container.clientHeight).toBeGreaterThan(0);
+
+        container.appendChild(middle);
+        middle.appendChild(child);
+        document.body.appendChild(container);
+
+        expect(tryToGetScrollableParentElement(child, -1)).toBe(container);
+    });
+});
