@@ -13,10 +13,11 @@
 
 
 import { expect, test, describe } from "bun:test";
-import { toKebabCase, deepMerge } from "../../src/utils.js";
 
 
 describe("toKebabCase", () => {
+    const { toKebabCase } = require("../../src/utils.js");
+
     test("converts camelCase to kebab-case", () => {
         expect(toKebabCase("camelCase")).toBe("camel-case");
     });
@@ -51,6 +52,8 @@ describe("toKebabCase", () => {
 });
 
 describe("deepMerge", () => {
+    const { deepMerge } = require("../../src/utils.js");
+
     test("merges flat objects", () => {
         const target = { a: 1, b: 2 };
         const source = { b: 3, c: 4 };
@@ -123,5 +126,81 @@ describe("deepMerge", () => {
         /** @type {*} */
         const result = deepMerge(target, source);
         expect(result.a).toBe(sharedObject);
+    });
+});
+
+
+describe("generateRandomString", () => {
+    const { generateRandomString } = require("../../src/utils.js");
+
+    // Test for generateRandomString
+    test("generates a random string of default length (16)", () => {
+        const randomString = generateRandomString();
+        expect(randomString).toHaveLength(16);
+        expect(typeof randomString).toBe("string");
+    });
+
+    test("generates a random string of specified length", () => {
+        const length = 10;
+        const randomString = generateRandomString(length);
+        expect(randomString).toHaveLength(length);
+        expect(typeof randomString).toBe("string");
+    });
+
+    test("generates a string with only alphanumeric characters", () => {
+        const randomString = generateRandomString();
+        const regex = /^[a-zA-Z0-9]+$/;
+        expect(randomString).toMatch(regex);
+    });
+});
+
+describe("removeSpace", () => {
+    const { removeSpace } = require("../../src/utils.js");
+
+    test("removes white space and new lines", () => {
+        const raw = "Hello   \n   World \t";
+        const result = removeSpace(raw);
+        expect(result).toBe("HelloWorld");
+    });
+
+    test("returns empty string when input is only spaces or new lines", () => {
+        const raw = "\n   \t   ";
+        const result = removeSpace(raw);
+        expect(result).toBe("");
+    });
+
+});
+
+describe("extractClassName", () => {
+    const { extractClassName } = require("../../src/utils.js");
+
+    test("extracts class names from a CSS-like string", () => {
+        const raw = ".class1 { color: red; } .class2 { font-size: 12px; }";
+        const classNames = extractClassName(raw);
+        expect(classNames).toEqual(["class1"]);
+    });
+
+    test("returns an empty array when no class names are found", () => {
+        const raw = "body { color: blue; }";
+        const classNames = extractClassName(raw);
+        expect(classNames).toEqual([]);
+    });
+});
+
+describe("addPrefixToClassNames", () => {
+    const { addPrefixToClassNames } = require("../../src/utils.js");
+
+    test("adds a prefix to class names in a CSS-like string", () => {
+        const raw = ".class1 { color: red; } .class2 { font-size: 12px; }";
+        const prefix = "prefix";
+        const result = addPrefixToClassNames(raw, prefix);
+        expect(result).toBe(".prefix-class1 { color: red; } .prefix-class2 { font-size: 12px; }");
+    });
+
+    test("returns the same string if no class names are found", () => {
+        const raw = "body { color: blue; }";
+        const prefix = "prefix";
+        const result = addPrefixToClassNames(raw, prefix);
+        expect(result).toBe("body { color: blue; }");
     });
 });
