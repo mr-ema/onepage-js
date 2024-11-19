@@ -403,11 +403,12 @@ export function isSlide(elem) {
  */
 export function isElementBeforeOrAfter(element, sibling) {
     if (element === sibling) return "same"
+    if (element.parentElement !== sibling.parentElement) return -1;
 
     const position = element.compareDocumentPosition(sibling);
-    if (position & Node.DOCUMENT_POSITION_PRECEDING) {
+    if (position & Node.DOCUMENT_POSITION_FOLLOWING ) {
         return "before";
-    } else if (position & Node.DOCUMENT_POSITION_FOLLOWING) {
+    } else if (position & Node.DOCUMENT_POSITION_PRECEDING) {
         return "after";
     }
 
