@@ -2,6 +2,7 @@
   "name": "onepage-js",
   "version": "0.1.0",
   "main": "dist/onepage.js",
+  "module": "dist/onepage.esm.js",
   "type": "module",
   "scripts": {
     "build": "bun run rollup --config",
@@ -23,6 +24,7 @@
   ],
   "files": [
     "dist/onepage.js",
+    "dist/onepage.esm.js",
     "package.json",
     "README.md"
   ],
