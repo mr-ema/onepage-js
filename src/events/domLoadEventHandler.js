@@ -27,14 +27,11 @@ const DOMLoadEventHandler = (() => {
      * @type {{ [key: string]: Array<(event: Event) => void | Promise<void>>}}
      */
     const _listeners = {
-        complete: [],
-        ready: [],
-        beforeExit: [],
-        exit: [],
+        DOMContentLoaded: [],
+        load: [],
+        beforeUnload: [],
+        unload: [],
     };
-
-    /** @type {typeof DOMLoadEventHandler.state} */
-    let state = "loading";
 
     /**
      * Add a listener for a specific event type
@@ -79,8 +76,7 @@ const DOMLoadEventHandler = (() => {
      * @param {Event} event - The DOMContentLoaded event object.
     */
     function _DOMContentLoadedEvent(event) {
-        state = "interactive";
-        _notifyListeners("ready", event);
+        _notifyListeners("DOMContentLoaded", event);
     }
 
     /**
@@ -88,8 +84,7 @@ const DOMLoadEventHandler = (() => {
      * @param {Event} event - The load event object.
      */
     function _loadEvent(event) {
-        state = "complete";
-        _notifyListeners("complete", event);
+        _notifyListeners("load", event);
     }
 
     /**
@@ -97,7 +92,7 @@ const DOMLoadEventHandler = (() => {
      * @param {Event} event - The beforeunload event object.
      */
     function _beforeUnloadEvent(event) {
-        _notifyListeners("beforeExit", event);
+        _notifyListeners("beforeUnload", event);
     }
 
     /**
@@ -105,7 +100,7 @@ const DOMLoadEventHandler = (() => {
      * @param {Event} event - The unload event object.
      */
     function _unloadEvent(event) {
-        _notifyListeners("exit", event);
+        _notifyListeners("unload", event);
     }
 
     function startListen() {
@@ -138,7 +133,6 @@ const DOMLoadEventHandler = (() => {
         startListen,
         stopListen,
 
-        state: state,
         on: on,
         off: off,
     };

@@ -112,7 +112,7 @@ const Onepage = (() => {
 
     (function _init() {
         DOMLoadEventHandler.startListen();
-        DOMLoadEventHandler.on("ready", async () => {
+        DOMLoadEventHandler.on("DOMContentLoaded", async () => {
             createHeadStyles();
             injectStylesOrThrow();
 

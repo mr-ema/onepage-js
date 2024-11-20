@@ -58,10 +58,8 @@ declare global {
         off(type: ObserverEventType, callback: (event: ObserverEventObject) => void | Promise<void>): void;
     };
 
-    type DOMLoadEventType = "ready" | "complete" | "beforeExit" | "exit";
+    type DOMLoadEventType = "DOMContentLoaded" | "load" | "beforeUnload" | "unload";
     interface DOMLoadEventHandler {
-        state: "loading" | "complete" | "interactive";
-
         startListen(): void;
         stopListen(): void;
 
