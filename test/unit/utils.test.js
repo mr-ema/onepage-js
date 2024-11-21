@@ -12,7 +12,7 @@
 // OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
-import { expect, test, describe, beforeEach } from "bun:test";
+import { expect, test, describe, beforeEach, spyOn } from "bun:test";
 
 
 describe("toKebabCase", () => {
@@ -823,5 +823,25 @@ describe("isElementBeforeOrAfter", () => {
         parentElement.appendChild(element1); // Appends element1 after element2
 
         expect(isElementBeforeOrAfter(element1, element2)).toBe("after");
+    });
+});
+
+describe("isTouchDevice", () => {
+    const { isTouchDevice } = require("../../src/utils.js");
+
+    test("should return true on touch devices", () => {
+        // Mocking matchMedia for touch devices
+        spyOn(window, "matchMedia").mockReturnValue(/** @type {*} */({ matches: true }));
+
+        const result = isTouchDevice();
+        expect(result).toBe(true);
+    });
+
+    test("should return false on non-touch devices", () => {
+        // Mocking matchMedia for non-touch devices
+        spyOn(window, "matchMedia").mockReturnValue(/** @type {*} */({ matches: false }));
+
+        const result = isTouchDevice();
+        expect(result).toBe(false);
     });
 });
