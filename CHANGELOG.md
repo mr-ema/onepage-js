@@ -29,12 +29,20 @@ scrollable elements and their parent containers.
 - **Unit tests for more utility functions:** Included additional test
 cases for various utility functions, improving overall test reliability.
 
+- **Unit test for custom event handlers:** Added comprehensive unit
+tests for various event handlers, including DOM events, swipe gestures,
+keyboard interactions, wheel scrolling, and observer-based mutations.
+
 - **Expanded tests for deep merge functionality:** Enhanced the test
 suite for the `deepMerge` function to ensure its correctness.
 
 - **Add ESM support to Rollup configuration and `package.json`:** This
 enhances support for modern JavaScript ecosystems and allows consumers
 to use the library with `import` statements seamlessly.
+
+- **Added cleanup function on event listeners:** Implemented listener
+cleanup to ensure proper removal of event listeners and observers when
+stopListen is called, preventing memory leaks.
 
 ### Changed
 - **Improved swipe scroll compatibility on mobile for multiple
@@ -66,6 +74,11 @@ functionality across different cases.
 
 - **Corrected deep merge logic:** Fixed issues in the `deepMerge`
 function, ensuring deep merging of objects is performed accurately.
+
+- **Corrected direction logic in scroll events:** Update scroll events to
+reset the scroll direction after capturing the axis, ensuring accurate
+scroll direction handling and preventing outdated axis data from
+persisting when the direction is not modified.
 
 <br>
 
