@@ -12,12 +12,17 @@
 // OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
-import { expect, test, describe, afterEach, mock, spyOn } from "bun:test";
+import { expect, test, describe, afterEach, beforeEach, mock, spyOn } from "bun:test";
 import SwipeEventHandler from "../../../src/events/swipeEventHandler";
 
 
 describe("SwipeEventHandler", () => {
     const mockCallback = mock();
+
+    beforeEach(() => {
+        // simulate touch device
+        spyOn(window, "matchMedia").mockReturnValue(/** @type {*} */({ matches: true }));
+    });
 
     afterEach(() => {
         mockCallback.mockReset();
