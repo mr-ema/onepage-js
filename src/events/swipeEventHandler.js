@@ -16,6 +16,7 @@ import { never } from "../assert.js";
 import constants from "../constans.js";
 import Logger from "../logger.js";
 import settings from "../settings.js";
+import { isTouchDevice } from "../utils.js";
 
 
 /**
@@ -175,15 +176,11 @@ const SwipeEventHandler = (() => {
         return (has_touch || (has_pointer && settings.scroll.swipeScroll));
     }
 
-    function _isTouchDevice() {
-        return (window.matchMedia && window.matchMedia("(pointer: coarse)").matches);
-    }
-
     function startListen() {
         if (_isListen) return;
 
         // Add pointer event listeners for non-touch devices if swipe scroll is enabled
-        if ((window?.PointerEvent && settings.scroll.swipeScroll) && !_isTouchDevice()) {
+        if ((window?.PointerEvent && settings.scroll.swipeScroll) && !isTouchDevice()) {
             document.addEventListener("pointerdown", _handleSwipeStart, false);
             document.addEventListener("pointermove", _handleSwipeMove, false);
             document.addEventListener("pointerup", _handleSwipeEnd, false);
@@ -193,7 +190,7 @@ const SwipeEventHandler = (() => {
         }
 
         // Add touch event listeners for touch-enabled devices
-        if (window?.TouchEvent && _isTouchDevice()) {
+        if (window?.TouchEvent && isTouchDevice()) {
             document.addEventListener("touchstart", _handleSwipeStart, false);
             document.addEventListener("touchend", _handleSwipeEnd, false);
             document.addEventListener("touchmove", _handleSwipeMove, false);

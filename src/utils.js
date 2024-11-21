@@ -419,6 +419,10 @@ export function isElementBeforeOrAfter(element, sibling) {
     return -1;
 }
 
+export function isTouchDevice() {
+    return (window.matchMedia && window.matchMedia("(pointer: coarse)").matches);
+}
+
 export default {
     toKebabCase: toKebabCase,
     addClassName: addClassName,
@@ -444,4 +448,5 @@ export default {
     isSlide: isSlide,
     isSlider: isSlider,
     isElementBeforeOrAfter: isElementBeforeOrAfter,
+    isTouchDevice: isTouchDevice,
 }
