@@ -71,6 +71,10 @@ const DOMLoadEventHandler = (() => {
         }
     }
 
+    function _cleanInternalListeners() {
+        Object.keys(_listeners).forEach(key => _listeners[key] = []);
+    }
+
     /**
      * Handler for the DOMContentLoaded event, triggering "ready" listeners.
      * @param {Event} event - The DOMContentLoaded event object.
@@ -126,6 +130,7 @@ const DOMLoadEventHandler = (() => {
 
         Logger.debug("DOMLoadEventHandler: Listeners [stopped]");
 
+        _cleanInternalListeners();
         _isListen = false;
     }
 

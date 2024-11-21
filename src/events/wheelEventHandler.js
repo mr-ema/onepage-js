@@ -26,7 +26,7 @@ const WheelEventHandler = (() => {
 
     /** @type {{ [key: string]: Array<(event: WheelEvent) => void | Promise<void>>}} */
     const _listeners = {
-        "wheel": []
+        wheel: []
     };
 
     /**
@@ -67,10 +67,19 @@ const WheelEventHandler = (() => {
         }
     }
 
+    function _cleanInternalListeners() {
+        Object.keys(_listeners).forEach(key => _listeners[key] = []);
+    }
+
     /** @param event {WheelEvent} */
     function _handleWheel(event) {
-        _direction.y = (event.deltaY > 0) ? 1 : -1;
-        _direction.x = (event.deltaX > 0) ? 1 : -1;
+        if (event.deltaY !== 0) {
+            _direction.y = (event.deltaY > 0) ? 1 : -1;
+        }
+
+        if (event.deltaX !== 0) {
+            _direction.x = (event.deltaX > 0) ? 1 : -1;
+        }
 
         _notifyListeners("wheel", event);
     }
@@ -79,14 +88,21 @@ const WheelEventHandler = (() => {
     function getAxis(direction = "vertical") {
         if (_direction.x === 0 && _direction.y === 0) return 0;
 
-        switch (direction) {
-            case "vertical":
-                return /** @type {Axis} */(_direction.y);
-            case "horizontal":
-                return /** @type {Axis} */(_direction.x);
-        }
+        let result = (() => {
+            switch (direction) {
+                case "vertical":
+                    return /** @type {Axis} */(_direction.y);
+                case "horizontal":
+                    return /** @type {Axis} */(_direction.x);
+            }
 
-        return 0;
+            return 0;
+        })();
+
+        _direction.y = 0;
+        _direction.x = 0;
+
+        return result;
     }
 
     /* @type {typeof WheelEventHandler.isEventAvailable} */
@@ -115,6 +131,7 @@ const WheelEventHandler = (() => {
 
         Logger.debug("WheelEventHandler: wheel event listeners [stoped]");
 
+        _cleanInternalListeners();
         _isListen = false;
     }
 

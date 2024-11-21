@@ -72,6 +72,10 @@ const SwipeEventHandler = (() => {
         }
     }
 
+    function _cleanInternalListeners() {
+        Object.keys(_listeners).forEach(key => _listeners[key] = []);
+    }
+
     /**
      * @param event {SwipeEvent}
      * @returns {Promise<void>}
@@ -144,6 +148,11 @@ const SwipeEventHandler = (() => {
         const diffY = _endPos.y - _startPos.y;
 
         if (diffX === 0 && diffY === 0) return 0;
+
+        _startPos.x = 0;
+        _startPos.y = 0;
+        _endPos.x = 0;
+        _endPos.y = 0;
 
         if (Math.abs(diffX) > Math.abs(diffY)) {
             if (Math.abs(diffX) >= constants.TOUCH_THRESHOLD && direction === "horizontal") {
@@ -219,6 +228,7 @@ const SwipeEventHandler = (() => {
             Logger.debug("SwipeEventHandler: touch event listeners [stopped]");
         }
 
+        _cleanInternalListeners();
         _isListen = false;
     }
 

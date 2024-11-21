@@ -33,6 +33,9 @@ const KeyEventHandler = (() => {
 
     let _lastKey = "";
 
+    // special variable only to hold axis related stuff
+    let _axisKey = "";
+
     /**
      * @param element {Element}
      * @param direction {Direction}
@@ -98,24 +101,31 @@ const KeyEventHandler = (() => {
         }
     }
 
+    function _cleanInternalListeners() {
+        Object.keys(_listeners).forEach(key => _listeners[key] = []);
+    }
+
     /**
      * @param event {KeyboardEvent}
      * @returns {Promise<void>}
      */
     async function _keydownEventHandler(event) {
         _lastKey = event.key;
+        _axisKey = event.key;
+
         _notifyListeners("keydown", event);
     }
 
     /** @type {typeof KeyEventHandler.getAxis } */
     function getAxis(direction = "vertical") {
         if (direction === "vertical") {
-            if (settings.keybindings.up.includes(_lastKey)) return -1;
-            if (settings.keybindings.down.includes(_lastKey)) return 1;
+            if (settings.keybindings.up.includes(_axisKey)) return -1;
+            if (settings.keybindings.down.includes(_axisKey)) return 1;
         } else if (direction === "horizontal") {
-            if (settings.keybindings.right.includes(_lastKey)) return 1;
-            if (settings.keybindings.left.includes(_lastKey)) return -1;
+            if (settings.keybindings.right.includes(_axisKey)) return 1;
+            if (settings.keybindings.left.includes(_axisKey)) return -1;
         }
+        _axisKey = ""; // reset axis
 
         return 0;
     }
@@ -146,6 +156,7 @@ const KeyEventHandler = (() => {
             Logger.debug("KeyEventHandler: key event listeners [stopped]");
         }
 
+        _cleanInternalListeners();
         _isListen = false;
     }
 

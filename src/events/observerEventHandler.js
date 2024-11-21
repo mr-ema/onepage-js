@@ -77,6 +77,10 @@ const ObserverEventHandler = (() => {
         }
     }
 
+    function _cleanInternalListeners() {
+        Object.keys(_listeners).forEach(key => _listeners[key] = []);
+    }
+
     /**
      * @param node {Node}
      * @returns {Element | null}
@@ -169,6 +173,8 @@ const ObserverEventHandler = (() => {
         if (_observer === null) return;
 
         _observer.disconnect();
+        _cleanInternalListeners();
+
         Logger.debug("ObserverEventHandler: Listeners [stopped]");
     }
 
