@@ -29,6 +29,7 @@ const KeyEventHandler = (() => {
      */
     const _listeners = {
         keydown: [],
+        keyup: [],
     };
 
     let _lastKey = "";
@@ -116,6 +117,18 @@ const KeyEventHandler = (() => {
         _notifyListeners("keydown", event);
     }
 
+    /**
+     * @param event {KeyboardEvent}
+     * @returns {Promise<void>}
+     */
+    async function _keyupEventHandler(event) {
+        if (event.key === _axisKey) {
+            _axisKey = "";
+        }
+
+        _notifyListeners("keyup", event);
+    }
+
     /** @type {typeof KeyEventHandler.getAxis } */
     function getAxis(direction = "vertical") {
         if (direction === "vertical") {
@@ -125,7 +138,6 @@ const KeyEventHandler = (() => {
             if (settings.keybindings.right.includes(_axisKey)) return 1;
             if (settings.keybindings.left.includes(_axisKey)) return -1;
         }
-        _axisKey = ""; // reset axis
 
         return 0;
     }
@@ -140,6 +152,7 @@ const KeyEventHandler = (() => {
 
         if (window?.KeyboardEvent && settings.scroll.keyboardScroll) {
             window.addEventListener("keydown", _keydownEventHandler, false);
+            window.addEventListener("keydown", _keyupEventHandler, false);
 
             Logger.debug("KeyEventHandler: key event listeners [started]");
         }
@@ -152,6 +165,7 @@ const KeyEventHandler = (() => {
 
         if (window?.KeyboardEvent && settings.scroll.keyboardScroll) {
             window.removeEventListener("keydown", _keydownEventHandler, false);
+            window.removeEventListener("keyup", _keyupEventHandler, false);
 
             Logger.debug("KeyEventHandler: key event listeners [stopped]");
         }

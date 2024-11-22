@@ -81,7 +81,7 @@ declare global {
         off(type: SwipeEventType, callback: (event: SwipeEvent) => void | Promise<void>): void;
     };
 
-    type KeyEventType = "keydown";
+    type KeyEventType = "keydown" | "keyup";
     type KeyEventHandler = ScrollEventHandlerInterface & {
         on(type: KeyEventType, callback: (event: KeyboardEvent) => void | Promise<void>): void;
         off(type: KeyEventType, callback: (event: KeyboardEvent) => void | Promise<void>): void;
