@@ -185,6 +185,24 @@ describe("extractClassName", () => {
         const classNames = extractClassName(raw);
         expect(classNames).toEqual([]);
     });
+
+    test("ignores dots in property values", () => {
+        const raw = ".class1 { color: rgba(0, 0, 0, 0.4); } .class2 { font-size: 1.2em; }";
+        const classNames = extractClassName(raw);
+        expect(classNames).toEqual(["class1"]);
+    });
+
+    test("handles CSS with no rules but includes dots", () => {
+        const raw = "div { background: url('image.jpg'); }";
+        const classNames = extractClassName(raw);
+        expect(classNames).toEqual([]);
+    });
+
+    test("handles complex CSS with nested selectors", () => {
+        const raw = ".class1 { color: red; } .class2:hover { text-decoration: underline; }";
+        const classNames = extractClassName(raw);
+        expect(classNames).toEqual(["class1"]);
+    });
 });
 
 describe("addPrefixToClassNames", () => {
@@ -202,6 +220,34 @@ describe("addPrefixToClassNames", () => {
         const prefix = "prefix";
         const result = addPrefixToClassNames(raw, prefix);
         expect(result).toBe("body { color: blue; }");
+    });
+
+    test("ignores dots in property values", () => {
+        const raw = ".class1 { color: rgba(0, 0, 0, 0.4); } .class2 { font-size: 1.2em; }";
+        const prefix = "prefix";
+        const result = addPrefixToClassNames(raw, prefix);
+        expect(result).toBe(".prefix-class1 { color: rgba(0, 0, 0, 0.4); } .prefix-class2 { font-size: 1.2em; }");
+    });
+
+    test("handles CSS with no rules but includes dots", () => {
+        const raw = "div { background: url('image.jpg'); }";
+        const prefix = "prefix";
+        const result = addPrefixToClassNames(raw, prefix);
+        expect(result).toBe("div { background: url('image.jpg'); }");
+    });
+
+    test("handles complex CSS with nested selectors", () => {
+        const raw = ".class1 { color: red; } .class2:hover { text-decoration: underline; }";
+        const prefix = "prefix";
+        const result = addPrefixToClassNames(raw, prefix);
+        expect(result).toBe(".prefix-class1 { color: red; } .prefix-class2:hover { text-decoration: underline; }");
+    });
+
+    test("handles media queries and avoids changing non-class selectors", () => {
+        const raw = "@media (max-width: 600px) { .class1 { font-size: 14px; } }";
+        const prefix = "prefix";
+        const result = addPrefixToClassNames(raw, prefix);
+        expect(result).toBe("@media (max-width: 600px) { .prefix-class1 { font-size: 14px; } }");
     });
 });
 
