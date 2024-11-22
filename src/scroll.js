@@ -130,11 +130,12 @@ const scroll = (() => {
         if (_isScrolling) return;
 
         _isScrolling = true;
-        if (_getEventAxis(event, "vertical") > 0) {
+        const axis = _getEventAxis(event, "vertical");
+        if (axis > 0) {
             if (!_hasOverflowScroll(currentSection, 1)) {
                 sections.scrollNext();
             }
-        } else if (_getEventAxis(event, "vertical") < 0) {
+        } else if (axis < 0) {
             if (!_hasOverflowScroll(currentSection, -1)) {
                 sections.scrollPrev();
             }
