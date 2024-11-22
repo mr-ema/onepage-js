@@ -171,6 +171,9 @@ const KeyEventHandler = (() => {
         }
 
         _cleanInternalListeners();
+        _lastKey = "";
+        _axisKey = "";
+
         _isListen = false;
     }
 
