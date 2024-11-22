@@ -109,9 +109,10 @@ const scroll = (() => {
     function _handleSlider(event, slider) {
         if (window?.WheelEvent && event instanceof WheelEvent) return;
 
-        if (_getEventAxis(event, "horizontal") > 0) {
+        const axis = _getEventAxis(event, "horizontal");
+        if (axis > 0) {
             slider.next();
-        } else if (_getEventAxis(event, "horizontal") < 0) {
+        } else if (axis < 0) {
             slider.prev();
         }
     }
