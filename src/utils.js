@@ -368,10 +368,8 @@ export function extractClassName(raw) {
  * @returns {string} - The modified CSS string with prefixed class names.
  */
 export function addPrefixToClassNames(raw, prefix) {
-    // Regular expression to match class names, capturing the name part after the dot
-    // \.           - Matches a literal dot (.)
-    // ([\w-]+)     - Captures one or more word characters or hyphens as the class name
-    return raw.replace(/\.(\w[\w-]*)/g, `.${prefix}-$1`);
+    const classRegex = /\.([a-zA-Z0-9_-]+)(?=\s*{|\s*:)/g;
+    return raw.replace(classRegex, (_match, className) => `.${prefix}-${className}`);
 }
 
 /**
