@@ -340,6 +340,24 @@ export function removeSpace(raw) {
 }
 
 /**
+ * Inlines a string by removing excessive line breaks and spaces, while
+ * ensuring no more than a specified number of consecutive spaces are retained.
+ *
+ * @param string {string}
+ * @param maxWhitespace {number} [maxWhitespace=1]
+ * @returns {string}
+ */
+export function inlineString(string, maxWhitespace = 1) {
+    const noLineBreaksText = string.replace(/[\r\n]+/g, " ");
+
+    // Replace multiple spaces with exactly maxWhitespace spaces
+    const regex = new RegExp(` {${maxWhitespace + 1},}`, "g");
+    const inlinedText = noLineBreaksText.replace(regex, " ".repeat(maxWhitespace));
+
+    return inlinedText.trim();
+}
+
+/**
  * Extracts class names from a CSS-like string.
  * Matches strings that start with a period (.) followed by the class name,
  * and stops at the first whitespace or `{` character.
@@ -447,4 +465,5 @@ export default {
     isSlider: isSlider,
     isElementBeforeOrAfter: isElementBeforeOrAfter,
     isTouchDevice: isTouchDevice,
+    inlineString: inlineString,
 }
