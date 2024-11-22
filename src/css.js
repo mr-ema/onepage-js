@@ -54,7 +54,7 @@ export function css(strings, ...values) {
     }, '');
 
     // Remove new lines and white space
-    let fmtResult = utils.removeSpace(result);
+    let fmtResult = utils.inlineString(result, 1);
 
     const match = utils.extractClassName(fmtResult);
     const className = match ? match[0] : utils.generateRandomString();
@@ -110,7 +110,7 @@ export const classes = (() => {
             margin: 0;
             padding: 0;
         }
-    `,
+        `,
 
         vertical: css`
         .vertical {
@@ -140,7 +140,6 @@ export const classes = (() => {
 
             box-sizing: border-box;
             -webkit-box-sizing: border-box;
-            -moz-box-sizing: border-box;
         }
     `,
 
@@ -188,45 +187,43 @@ export const classes = (() => {
 
         sectionPagination: css`
         .section-pagination {
-            position: absolute;
-            right: 10px;
+            position: fixed;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            border-radius: 0.3rem;
+            right: 1rem;
             top: 50%;
             z-index: 2;
             list-style: none;
 
             margin: 0;
-            padding: 0;
+            padding: 0.3rem;
 
             li {
                 padding: 0;
                 text-align: center;
             }
 
-            li a {
-                padding: 10px;
-                width: 4px;
-                height: 4px;
-                display: block;
+            li > a {
+                display: flex;
+                width: 1rem;
+                height: 1rem;
             }
 
-            li a:before {
+            li > a:before {
                 content: '';
                 position: absolute;
-                width: 4px;
-                height: 4px;
-                background: rgba(0,0,0,0.85);
-                border-radius: 10px;
-                -webkit-border-radius: 10px;
-                -moz-border-radius: 10px;
+                background: rgba(0, 0, 0, 0.69);
+                border-radius: 1rem;
+                width: 1rem;
+                height: 1rem;
             }
 
-            li a.active:before {
-                width: 10px;
-                height: 10px;
-                background: none;
-                border: 1px solid black;
-                margin-top: -4px;
-                left: 8px;
+            li > a.active:before {
+                background: rgba(0, 0, 0, 0.9);
+                width: 1.2rem;
+                height: 1.2rem;
             }
         }
     `,
