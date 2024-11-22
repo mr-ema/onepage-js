@@ -891,3 +891,68 @@ describe("isTouchDevice", () => {
         expect(result).toBe(false);
     });
 });
+
+describe('inlineString function', () => {
+    const { inlineString } = require("../../src/utils.js");
+
+    test('should inline text with excessive spaces', () => {
+        const input = "This  is   a    test.";
+        const output = inlineString(input, 1);
+        expect(output).toBe("This is a test.");
+    });
+
+    test('should keep max allowed spaces', () => {
+        const input = "This   is    a     test.";
+        const output = inlineString(input, 2);
+        expect(output).toBe("This  is  a  test.");
+    });
+
+    test('should replace line breaks with a single space', () => {
+        const input = "This is a test.\r\nNew line here.";
+        const output = inlineString(input, 1);
+        expect(output).toBe("This is a test. New line here.");
+    });
+
+    test('should handle multiple line breaks', () => {
+        const input = "This is a test.\r\n\nNew line\r\n\nhere.";
+        const output = inlineString(input, 1);
+        expect(output).toBe("This is a test. New line here.");
+    });
+
+    test('should handle no excessive spaces (edge case)', () => {
+        const input = "This is a test.";
+        const output = inlineString(input, 1);
+        expect(output).toBe("This is a test.");
+    });
+
+    test('should trim leading and trailing whitespace', () => {
+        const input = "   This is a test.   ";
+        const output = inlineString(input, 1);
+        expect(output).toBe("This is a test.");
+    });
+
+    test('should allow a custom maxWhitespace value', () => {
+        const input = "This    is      a       test.";
+        const output = inlineString(input, 3);
+        expect(output).toBe("This   is   a   test.");
+    });
+
+    test('should handle empty strings', () => {
+        const input = "";
+        const output = inlineString(input, 1);
+        expect(output).toBe("");
+    });
+
+    test('should handle strings with only line breaks and spaces', () => {
+        const input = "\n \r\n  \r";
+        const output = inlineString(input, 1);
+        expect(output).toBe("");
+    });
+
+    test('should handle a large number of spaces correctly', () => {
+        const input = "This    is    a    test.";
+        const output = inlineString(input, 5);
+        expect(output).toBe("This    is    a    test.");
+    });
+
+});
