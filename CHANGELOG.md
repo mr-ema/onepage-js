@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 <br>
 
-## [Unreleased] - 2024-11-20
+## [v0.1.0-alpha.1] - 2024-11-23
 
 ### Added
 - **Integrated Happydom for DOM-based testing:** Introduced Happydom
@@ -44,6 +44,14 @@ to use the library with `import` statements seamlessly.
 cleanup to ensure proper removal of event listeners and observers when
 stopListen is called, preventing memory leaks.
 
+- **Added unit tests for objects:** Added unit tests for `SectionList`
+and `Slider` object.
+
+- **Added `keyup` event to custom event handler:** Added `keyup` to
+`KeyEventHandler`.
+
+- **Added debounce util function:** Implemented a debounce function
+
 ### Changed
 - **Improved swipe scroll compatibility on mobile for multiple
 browsers:** Resolved an issue where swipe scrolling was functional only
@@ -79,6 +87,10 @@ function, ensuring deep merging of objects is performed accurately.
 reset the scroll direction after capturing the axis, ensuring accurate
 scroll direction handling and preventing outdated axis data from
 persisting when the direction is not modified.
+
+- **Scroll axis logic in event handling:** Optimized logic to avoid
+redundant calls to `_getEventAxis`, improving efficiency and preventing
+buggy behavior.
 
 <br>
 
