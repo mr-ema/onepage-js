@@ -35,7 +35,7 @@ const settings = {
         keyboardScroll: true,   // Enable scroll with keyboard
         swipeScroll: false,     // Enable scroll with mouse draggin (click + direction)
         overflowScroll: false,  // Enable normal scroll when elements have overflow
-        speed: 256,             // Scroll 'n' pixels when there is overflow scroll
+        speed: 69,             // Scroll 'n' pixels when there is overflow scroll
 
         direction: /** @type {Direction}     */ ("vertical"),
         behavior: /** @type {ScrollBehavior} */ ("smooth"),
