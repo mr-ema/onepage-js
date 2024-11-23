@@ -106,6 +106,7 @@ export const classes = (() => {
         html: css`
         .document {
             overflow: hidden;
+            scroll-behavior: smooth;
 
             margin: 0;
             padding: 0;
