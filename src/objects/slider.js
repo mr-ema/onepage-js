@@ -58,8 +58,9 @@ export default function Slider(slideList, options = {}) {
         if (index < 0 || index >= elementList.length) return;
 
         elementList[index].scrollIntoView({
-            behavior: settings.scroll.behavior || "smooth",
+            behavior: settings.scroll.behavior,
             block: "start",
+            inline: "center"
         });
     }
 
