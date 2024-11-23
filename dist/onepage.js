@@ -129,7 +129,7 @@ var Onepage = (function () {
         function isParentElementScrollable(element, depth) {
             let parent = element.parentElement;
 
-            for (let level = depth; level <= depth; level += 1) {
+            for (let level = depth; level <= depth;) {
                 if (parent == null) break;
 
                 const hasVerticalScroll = parent.scrollHeight > parent.clientHeight;
@@ -141,7 +141,9 @@ var Onepage = (function () {
                 parent = parent?.parentElement;
 
                 // Keep Iterating Until There Is No More Parents Elements
-                if (depth === -1) level = depth;
+                if (depth !== -1) {
+                    level += 1;
+                }
             }
 
             return false;
@@ -171,7 +173,7 @@ var Onepage = (function () {
         function tryToGetScrollableParentElement(element, depth = 0) {
             let parent = element.parentElement;
 
-            for (let level = depth; level <= depth; level += 1) {
+            for (let level = depth; level <= depth;) {
                 if (parent == null) break;
 
                 const hasVerticalScroll = parent.scrollHeight > parent.clientHeight;
@@ -183,7 +185,9 @@ var Onepage = (function () {
                 parent = parent?.parentElement;
 
                 // Keep Iterating Until There Is No More Parents Elements
-                if (depth === -1) level = depth;
+                if (depth !== -1) {
+                    level += 1;
+                }
             }
 
             return null;
@@ -197,7 +201,7 @@ var Onepage = (function () {
         function slideParentCtnOrNull(slide, depth = 0) {
             let parent = slide.parentElement;
 
-            for (let level = depth; level <= depth; level += 1) {
+            for (let level = depth; level <= depth;) {
                 if (parent == null) break;
 
                 if (parent.classList.contains(constants.SLIDER_WRAPPER_CLASS_NAME)) {
@@ -207,7 +211,9 @@ var Onepage = (function () {
                 parent = parent?.parentElement;
 
                 // Keep Iterating Until There Is No More Parents Elements
-                if (depth === -1) level = depth;
+                if (depth !== -1) {
+                    level += 1;
+                }
             }
 
             return null;
@@ -221,7 +227,7 @@ var Onepage = (function () {
         function sectionParentOrNull(element, depth = 0) {
             let parent = element.parentElement;
 
-            for (let level = depth; level <= depth; level += 1) {
+            for (let level = depth; level <= depth;) {
                 if (parent == null) break;
 
                 if (parent.classList.contains(constants.SECTION_CLASS_NAME)) {
@@ -231,7 +237,10 @@ var Onepage = (function () {
                 parent = parent?.parentElement;
 
                 // Keep Iterating Until There Is No More Parents Elements
-                if (depth === -1) level = depth;
+                if (depth !== -1) {
+                    level += 1;
+                }
+
             }
 
             return null;
@@ -243,11 +252,13 @@ var Onepage = (function () {
          * @returns {boolean}
          */
         function hasReachedEndOfScroll(element, direction = "vertical") {
+            const tolerance = 1; // Allow a small margin for rounding errors
+
             switch (direction.toLowerCase()) {
                 case "vertical":
-                    return ((element.scrollTop + element.clientHeight) >= element.scrollHeight);
+                    return ((element.scrollTop + element.clientHeight + tolerance) >= element.scrollHeight);
                 case "horizontal":
-                    return ((element.scrollLeft + element.clientWidth) >= element.scrollWidth);
+                    return ((element.scrollLeft + element.clientWidth + tolerance) >= element.scrollWidth);
             }
 
             return false;
@@ -259,11 +270,13 @@ var Onepage = (function () {
          * @returns {boolean}
          */
         function hasReachedStartOfScroll(element, direction = "vertical") {
+            const tolerance = 1; // Allow a small margin for rounding errors
+
             switch (direction.toLowerCase()) {
                 case "vertical":
-                    return (element.scrollTop === 0);
+                    return (element.scrollTop <= tolerance);
                 case "horizontal":
-                    return (element.scrollLeft === 0);
+                    return (element.scrollLeft <= tolerance);
             }
 
             return false;
@@ -361,9 +374,9 @@ var Onepage = (function () {
                 if (source.hasOwnProperty(key)) {
                     if (source[key] instanceof Object && target[key] instanceof Object) {
                         target[key] = deepMerge(target[key], source[key]);
+                    } else {
+                        target[key] = source[key];
                     }
-                } else {
-                    target[key] = source[key];
                 }
             }
 
@@ -403,6 +416,24 @@ var Onepage = (function () {
         }
 
         /**
+         * Inlines a string by removing excessive line breaks and spaces, while
+         * ensuring no more than a specified number of consecutive spaces are retained.
+         *
+         * @param string {string}
+         * @param maxWhitespace {number} [maxWhitespace=1]
+         * @returns {string}
+         */
+        function inlineString(string, maxWhitespace = 1) {
+            const noLineBreaksText = string.replace(/[\r\n]+/g, " ");
+
+            // Replace multiple spaces with exactly maxWhitespace spaces
+            const regex = new RegExp(` {${maxWhitespace + 1},}`, "g");
+            const inlinedText = noLineBreaksText.replace(regex, " ".repeat(maxWhitespace));
+
+            return inlinedText.trim();
+        }
+
+        /**
          * Extracts class names from a CSS-like string.
          * Matches strings that start with a period (.) followed by the class name,
          * and stops at the first whitespace or `{` character.
@@ -416,7 +447,7 @@ var Onepage = (function () {
             const matches = raw.match(regex);
             if (matches) {
                 // Clean up matches to remove the leading dot and trailing `{`
-                return matches.map(match => match.replace(/^\.\s*|[{]\s*$/g, ''));
+                return matches.map(match => match.replace(/^\.\s*|\s*{\s*$/g, ""));
             }
 
             return [];
@@ -431,10 +462,8 @@ var Onepage = (function () {
          * @returns {string} - The modified CSS string with prefixed class names.
          */
         function addPrefixToClassNames(raw, prefix) {
-            // Regular expression to match class names, capturing the name part after the dot
-            // \.           - Matches a literal dot (.)
-            // ([\w-]+)     - Captures one or more word characters or hyphens as the class name
-            return raw.replace(/\.(\w[\w-]*)/g, `.${prefix}-$1`);
+            const classRegex = /\.([a-zA-Z0-9_-]+)(?=\s*{|\s*:)/g;
+            return raw.replace(classRegex, (_match, className) => `.${prefix}-${className}`);
         }
 
         /**
@@ -470,15 +499,35 @@ var Onepage = (function () {
          */
         function isElementBeforeOrAfter(element, sibling) {
             if (element === sibling) return "same"
+            if (element.parentElement !== sibling.parentElement) return -1;
 
             const position = element.compareDocumentPosition(sibling);
-            if (position & Node.DOCUMENT_POSITION_PRECEDING) {
+            if (position & Node.DOCUMENT_POSITION_FOLLOWING) {
                 return "before";
-            } else if (position & Node.DOCUMENT_POSITION_FOLLOWING) {
+            } else if (position & Node.DOCUMENT_POSITION_PRECEDING) {
                 return "after";
             }
 
             return -1;
+        }
+
+        function isTouchDevice() {
+            return (window.matchMedia && window.matchMedia("(pointer: coarse)").matches);
+        }
+
+        /**
+         * @param func {Function} - callback function
+         * @param delay {number} - delay in ms
+         */
+        function debounce(func, delay) {
+            /** @type {Timer}*/
+            let timer;
+
+            /** @param args {*} */
+            return (...args) => {
+                clearTimeout(timer);
+                timer = setTimeout(() => func(...args), delay);
+            };
         }
 
         var utils = {
@@ -506,6 +555,9 @@ var Onepage = (function () {
             isSlide: isSlide,
             isSlider: isSlider,
             isElementBeforeOrAfter: isElementBeforeOrAfter,
+            isTouchDevice: isTouchDevice,
+            inlineString: inlineString,
+            debounce: debounce
         };
 
         // Zero-Clause BSD
@@ -541,7 +593,7 @@ var Onepage = (function () {
                 keyboardScroll: true,   // Enable scroll with keyboard
                 swipeScroll: false,     // Enable scroll with mouse draggin (click + direction)
                 overflowScroll: false,  // Enable normal scroll when elements have overflow
-                speed: 256,             // Scroll 'n' pixels when there is overflow scroll
+                speed: 69,             // Scroll 'n' pixels when there is overflow scroll
 
                 direction: /** @type {Direction}     */ ("vertical"),
                 behavior: /** @type {ScrollBehavior} */ ("smooth"),
@@ -699,7 +751,7 @@ var Onepage = (function () {
             }, '');
 
             // Remove new lines and white space
-            let fmtResult = utils.removeSpace(result);
+            let fmtResult = utils.inlineString(result, 1);
 
             const match = utils.extractClassName(fmtResult);
             const className = match ? match[0] : utils.generateRandomString();
@@ -751,11 +803,12 @@ var Onepage = (function () {
                 html: css`
         .document {
             overflow: hidden;
+            scroll-behavior: smooth;
 
             margin: 0;
             padding: 0;
         }
-    `,
+        `,
 
                 vertical: css`
         .vertical {
@@ -785,7 +838,6 @@ var Onepage = (function () {
 
             box-sizing: border-box;
             -webkit-box-sizing: border-box;
-            -moz-box-sizing: border-box;
         }
     `,
 
@@ -833,45 +885,43 @@ var Onepage = (function () {
 
                 sectionPagination: css`
         .section-pagination {
-            position: absolute;
-            right: 10px;
+            position: fixed;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            border-radius: 0.3rem;
+            right: 1rem;
             top: 50%;
             z-index: 2;
             list-style: none;
 
             margin: 0;
-            padding: 0;
+            padding: 0.3rem;
 
             li {
                 padding: 0;
                 text-align: center;
             }
 
-            li a {
-                padding: 10px;
-                width: 4px;
-                height: 4px;
-                display: block;
+            li > a {
+                display: flex;
+                width: 1rem;
+                height: 1rem;
             }
 
-            li a:before {
+            li > a:before {
                 content: '';
                 position: absolute;
-                width: 4px;
-                height: 4px;
-                background: rgba(0,0,0,0.85);
-                border-radius: 10px;
-                -webkit-border-radius: 10px;
-                -moz-border-radius: 10px;
+                background: rgba(0, 0, 0, 0.69);
+                border-radius: 1rem;
+                width: 1rem;
+                height: 1rem;
             }
 
-            li a.active:before {
-                width: 10px;
-                height: 10px;
-                background: none;
-                border: 1px solid black;
-                margin-top: -4px;
-                left: 8px;
+            li > a.active:before {
+                background: rgba(0, 0, 0, 0.9);
+                width: 1.2rem;
+                height: 1.2rem;
             }
         }
     `,
@@ -1020,7 +1070,7 @@ var Onepage = (function () {
 
             /** @type {{ [key: string]: Array<(event: WheelEvent) => void | Promise<void>>}} */
             const _listeners = {
-                "wheel": []
+                wheel: []
             };
 
             /**
@@ -1061,10 +1111,22 @@ var Onepage = (function () {
                 }
             }
 
+            function _cleanInternalListeners() {
+                Object.keys(_listeners).forEach(key => _listeners[key] = []);
+            }
+
             /** @param event {WheelEvent} */
             function _handleWheel(event) {
-                _direction.y = (event.deltaY > 0) ? 1 : -1;
-                _direction.x = (event.deltaX > 0) ? 1 : -1;
+                _direction.y = 0;
+                _direction.x = 0;
+
+                if (event.deltaY !== 0) {
+                    _direction.y = (event.deltaY > 0) ? 1 : -1;
+                }
+
+                if (event.deltaX !== 0) {
+                    _direction.x = (event.deltaX > 0) ? 1 : -1;
+                }
 
                 _notifyListeners("wheel", event);
             }
@@ -1073,14 +1135,18 @@ var Onepage = (function () {
             function getAxis(direction = "vertical") {
                 if (_direction.x === 0 && _direction.y === 0) return 0;
 
-                switch (direction) {
-                    case "vertical":
-                        return /** @type {Axis} */(_direction.y);
-                    case "horizontal":
-                        return /** @type {Axis} */(_direction.x);
-                }
+                let result = (() => {
+                    switch (direction) {
+                        case "vertical":
+                            return /** @type {Axis} */(_direction.y);
+                        case "horizontal":
+                            return /** @type {Axis} */(_direction.x);
+                    }
 
-                return 0;
+                    return 0;
+                })();
+
+                return result;
             }
 
             /* @type {typeof WheelEventHandler.isEventAvailable} */
@@ -1100,6 +1166,11 @@ var Onepage = (function () {
                 _isListen = true;
             }
 
+            function _makeCleanup() {
+                _cleanInternalListeners();
+                _direction = { x: 0, y: 0};
+            }
+
             function stopListen() {
                 if (!_isListen) return;
 
@@ -1109,6 +1180,7 @@ var Onepage = (function () {
 
                 Logger.debug("WheelEventHandler: wheel event listeners [stoped]");
 
+                _makeCleanup();
                 _isListen = false;
             }
 
@@ -1142,11 +1214,17 @@ var Onepage = (function () {
          * @type {SwipeEventHandler}
          */
         const SwipeEventHandler = (() => {
-            const { MOUSE_SWIPE_DISCARDED_BUTTONS } = constants;
-
             let _isListen = false;
-            let _startPos = /** @type {Vector2} */  { x: 0, y: 0 };
-            let _currentPos = /** @type {Vector2} */  { x: 0, y: 0 };
+
+            const _pos = {
+                start: /** @type {Vector2} */  { x: 0, y: 0 },
+                end: /** @type {Vector2} */  { x: 0, y: 0 },
+
+                reset() {
+                    this.start = { x: 0, y: 0 };
+                    this.end = { x: 0, y: 0 };
+                }
+            };
 
             /** @type {{ [key: string]: Array<(event: SwipeEvent) => void | Promise<void>>}} */
             const _listeners = {
@@ -1192,19 +1270,25 @@ var Onepage = (function () {
                 }
             }
 
+            function _cleanInternalListeners() {
+                Object.keys(_listeners).forEach(key => _listeners[key] = []);
+            }
+
             /**
              * @param event {SwipeEvent}
              * @returns {Promise<void>}
              */
             async function _handleSwipeStart(event) {
+                _pos.reset();
+
                 if (window?.TouchEvent && event instanceof TouchEvent) {
-                    _startPos.x = event.changedTouches[0].screenX;
-                    _startPos.y = event.changedTouches[0].screenY;
+                    _pos.start.x = event.changedTouches[0].clientX;
+                    _pos.start.y = event.changedTouches[0].clientY;
                 } else if (window?.PointerEvent && event instanceof PointerEvent) {
                     const button = /** @type {MouseButton} */ (event.button);
                     if (!(constants.MOUSE_SWIPE_DISCARDED_BUTTONS.includes(button))) {
-                        _startPos.x = event.screenX;
-                        _startPos.y = event.screenY;
+                        _pos.start.x = event.clientX;
+                        _pos.start.y = event.clientY;
                     }
                     Logger.debug("SwipeEventHandler: pressed mouse button code on 'swipeStart': ", [button]);
                 }
@@ -1216,18 +1300,36 @@ var Onepage = (function () {
              * @param event {SwipeEvent}
              * @returns {Promise<void>}
              */
-            async function _handleSwipeEnd(event) {
-                _currentPos.x = 0;
-                _currentPos.y = 0;
-
+            async function _handleSwipeMove(event) {
                 if (window?.TouchEvent && event instanceof TouchEvent) {
-                    _currentPos.x = event.changedTouches[0].screenX;
-                    _currentPos.y = event.changedTouches[0].screenY;
+                    _pos.end.x = event.changedTouches[0].clientX;
+                    _pos.end.y = event.changedTouches[0].clientY;
                 } else if (window?.PointerEvent && event instanceof PointerEvent) {
                     const button = /** @type {MouseButton} */ (event.button);
                     if (!(constants.MOUSE_SWIPE_DISCARDED_BUTTONS.includes(button))) {
-                        _currentPos.x = event.screenX;
-                        _currentPos.y = event.screenY;
+                        _pos.end.x = event.clientX;
+                        _pos.end.y = event.clientY;
+                    }
+
+                    Logger.debug("SwipeEventHandler: pressed mouse button code on 'swipeMove': ", [button]);
+                }
+            }
+
+            /**
+             * @param event {SwipeEvent}
+             * @returns {Promise<void>}
+             */
+            async function _handleSwipeEnd(event) {
+                if (window?.TouchEvent && event instanceof TouchEvent) {
+                    _pos.end.x = event.changedTouches[0].clientX;
+                    _pos.end.y = event.changedTouches[0].clientY;
+                } else if (window?.PointerEvent && event instanceof PointerEvent) {
+                    const button = /** @type {MouseButton} */ (event.button);
+                    if (!(constants.MOUSE_SWIPE_DISCARDED_BUTTONS.includes(button))) {
+                        if (event.clientX !== 0 || event.clientY !== 0) {
+                            _pos.end.x = event.clientX;
+                            _pos.end.y = event.clientY;
+                        }
                     }
 
                     Logger.debug("SwipeEventHandler: pressed mouse button code on 'swipeEnd': ", [button]);
@@ -1238,18 +1340,18 @@ var Onepage = (function () {
 
             /** @type {typeof SwipeEventHandler.getAxis} */
             function getAxis(direction = "vertical") {
-                if (_currentPos.x === 0 && _currentPos.y === 0) return 0;
+                const diffX = _pos.end.x - _pos.start.x;
+                const diffY = _pos.end.y - _pos.start.y;
 
-                const diffX = _startPos.x - _currentPos.x;
-                const diffY = _startPos.y - _currentPos.y;
+                if (diffX === 0 && diffY === 0) return 0;
 
                 if (Math.abs(diffX) > Math.abs(diffY)) {
                     if (Math.abs(diffX) >= constants.TOUCH_THRESHOLD && direction === "horizontal") {
-                        return (diffX >= 0 ? 1 : -1);
+                        return (diffX >= 0 ? -1 : 1);
                     }
                 } else {
                     if (Math.abs(diffY) >= constants.TOUCH_THRESHOLD && direction === "vertical") {
-                        return (diffY >= 0 ? 1 : -1);
+                        return (diffY >= 0 ? -1 : 1);
                     }
                 }
 
@@ -1267,27 +1369,22 @@ var Onepage = (function () {
             function startListen() {
                 if (_isListen) return;
 
-                if ((window?.PointerEvent && settings.scroll.swipeScroll) || window?.TouchEvent) {
+                // Add pointer event listeners for non-touch devices if swipe scroll is enabled
+                if ((window?.PointerEvent && settings.scroll.swipeScroll) && !isTouchDevice()) {
                     document.addEventListener("pointerdown", _handleSwipeStart, false);
+                    document.addEventListener("pointermove", _handleSwipeMove, false);
                     document.addEventListener("pointerup", _handleSwipeEnd, false);
-                    document.addEventListener("pointermove", event => event.preventDefault(), false);
-
-                    if (settings.scroll.overflowScroll) {
-                        document.addEventListener("pointercancel", _handleSwipeEnd, false);
-                    }
+                    document.addEventListener("pointercancel", _handleSwipeEnd, false);
 
                     Logger.debug("SwipeEventHandler: pointer event listeners [started]");
                 }
 
-                // Fallback to touch if pointer event is not supported (android/ios)
-                if (window?.TouchEvent && (typeof window?.PointerEvent) === "undefined") {
+                // Add touch event listeners for touch-enabled devices
+                if (window?.TouchEvent && isTouchDevice()) {
                     document.addEventListener("touchstart", _handleSwipeStart, false);
                     document.addEventListener("touchend", _handleSwipeEnd, false);
-                    document.addEventListener("touchmove", event => event.preventDefault(), false);
-
-                    if (settings.scroll.overflowScroll) {
-                        document.addEventListener("touchcancel", _handleSwipeEnd, false);
-                    }
+                    document.addEventListener("touchmove", _handleSwipeMove, false);
+                    document.addEventListener("touchcancel", _handleSwipeEnd, false);
 
                     Logger.debug("SwipeEventHandler: touch event listeners [started]");
                 }
@@ -1295,26 +1392,35 @@ var Onepage = (function () {
                 _isListen = true;
             }
 
+            function _makeCleanup() {
+                _cleanInternalListeners();
+                _pos.reset();
+            }
+
             function stopListen() {
                 if (!_isListen) return;
 
-                if ((window?.PointerEvent && settings.scroll.swipeScroll) || window?.TouchEvent) {
+                // Remove pointer event listeners for non-touch devices if swipe scroll is enabled
+                if ((window?.PointerEvent && settings.scroll.swipeScroll) && typeof window?.TouchEvent === "undefined") {
                     document.removeEventListener("pointerdown", _handleSwipeStart, false);
+                    document.removeEventListener("pointermove", _handleSwipeMove, false);
                     document.removeEventListener("pointerup", _handleSwipeEnd, false);
-                    document.removeEventListener("pointermove", event => event.preventDefault(), false);
+                    document.removeEventListener("pointercancel", _handleSwipeEnd, false);
 
                     Logger.debug("SwipeEventHandler: pointer event listeners [stoped]");
                 }
 
-                // Fallback to touch if pointer event is not supported (android/ios)
-                if (window?.TouchEvent && (typeof window?.PointerEvent) === "undefined") {
+                // Remove touch event listeners for touch-enabled devices
+                if (window?.TouchEvent) {
                     document.removeEventListener("touchstart", _handleSwipeStart, false);
                     document.removeEventListener("touchend", _handleSwipeEnd, false);
-                    document.removeEventListener("touchmove", event => event.preventDefault(), false);
+                    document.removeEventListener("touchmove", _handleSwipeMove, false);
+                    document.removeEventListener("touchcancel", _handleSwipeEnd, false);
 
                     Logger.debug("SwipeEventHandler: touch event listeners [stopped]");
                 }
 
+                _makeCleanup();
                 _isListen = false;
             }
 
@@ -1350,14 +1456,23 @@ var Onepage = (function () {
         const KeyEventHandler = (() => {
             let _isListen = false;
 
+            let _keys = {
+                lastKey: "",
+                axisKey: "", // special variable only to hold axis related stuff
+
+                reset() {
+                    this.lastKey = "";
+                    this.axisKey = "";
+                }
+            };
+
             /**
              * @type {{ [key: string]: Array<(event: KeyboardEvent) => void | Promise<void>>}}
              */
             const _listeners = {
                 keydown: [],
+                keyup: [],
             };
-
-            let _lastKey = "";
 
             /**
              * @param element {Element}
@@ -1367,20 +1482,14 @@ var Onepage = (function () {
             function scrollWithKeys(element, direction = "vertical") {
                 if (element.scrollHeight === 0 && element.scrollWidth === 0) return;
 
-                const { speed, behavior } = settings.scroll;
+                const { speed } = settings.scroll;
 
                 if (direction === "vertical") {
-                    const offsetTop = element.scrollTop;
-                    element.scroll({
-                        top: (getAxis(direction) * speed) + offsetTop,
-                        behavior: behavior
-                    });
+                    const targetScroll = (getAxis(direction) * speed) + element.scrollTop;
+                    element.scroll({ top: targetScroll });
                 } else if (direction === "horizontal") {
-                    const offsetLeft = element.scrollLeft;
-                    element.scroll({
-                        left: (getAxis(direction) * speed) + offsetLeft,
-                        behavior: behavior
-                    });
+                    const targetScroll = (getAxis(direction) * speed) + element.scrollLeft;
+                    element.scroll({ left: targetScroll });
                 }
 
                 Logger.debug(`KeyEventHandler: scroll with keys called with speed '${speed}' on element`, [element]);
@@ -1424,23 +1533,41 @@ var Onepage = (function () {
                 }
             }
 
+            function _cleanInternalListeners() {
+                Object.keys(_listeners).forEach(key => _listeners[key] = []);
+            }
+
             /**
              * @param event {KeyboardEvent}
              * @returns {Promise<void>}
              */
             async function _keydownEventHandler(event) {
-                _lastKey = event.key;
+                _keys.lastKey = event.key;
+                _keys.axisKey = event.key;
+
                 _notifyListeners("keydown", event);
+            }
+
+            /**
+             * @param event {KeyboardEvent}
+             * @returns {Promise<void>}
+             */
+            async function _keyupEventHandler(event) {
+                if (event.key === _keys.axisKey) {
+                    _keys.axisKey = "";
+                }
+
+                _notifyListeners("keyup", event);
             }
 
             /** @type {typeof KeyEventHandler.getAxis } */
             function getAxis(direction = "vertical") {
                 if (direction === "vertical") {
-                    if (settings.keybindings.up.includes(_lastKey)) return -1;
-                    if (settings.keybindings.down.includes(_lastKey)) return 1;
+                    if (settings.keybindings.up.includes(_keys.axisKey)) return -1;
+                    if (settings.keybindings.down.includes(_keys.axisKey)) return 1;
                 } else if (direction === "horizontal") {
-                    if (settings.keybindings.right.includes(_lastKey)) return 1;
-                    if (settings.keybindings.left.includes(_lastKey)) return -1;
+                    if (settings.keybindings.right.includes(_keys.axisKey)) return 1;
+                    if (settings.keybindings.left.includes(_keys.axisKey)) return -1;
                 }
 
                 return 0;
@@ -1456,6 +1583,7 @@ var Onepage = (function () {
 
                 if (window?.KeyboardEvent && settings.scroll.keyboardScroll) {
                     window.addEventListener("keydown", _keydownEventHandler, false);
+                    window.addEventListener("keydown", _keyupEventHandler, false);
 
                     Logger.debug("KeyEventHandler: key event listeners [started]");
                 }
@@ -1463,15 +1591,22 @@ var Onepage = (function () {
                 _isListen = true;
             }
 
+            function _makeCleanup() {
+                _cleanInternalListeners();
+                _keys.reset();
+            }
+
             function stopListen() {
                 if (!_isListen) return;
 
                 if (window?.KeyboardEvent && settings.scroll.keyboardScroll) {
                     window.removeEventListener("keydown", _keydownEventHandler, false);
+                    window.removeEventListener("keyup", _keyupEventHandler, false);
 
                     Logger.debug("KeyEventHandler: key event listeners [stopped]");
                 }
 
+                _makeCleanup();
                 _isListen = false;
             }
 
@@ -1502,6 +1637,8 @@ var Onepage = (function () {
 
 
         const scroll = (() => {
+            /** @type {Timer} */
+            let _scrollTimer;
             let _isScrolling = false;
 
             /**
@@ -1509,7 +1646,6 @@ var Onepage = (function () {
              * @returns {void}
              */
             function init(sections) {
-
                 if (WheelEventHandler.isEventAvailable()) {
                     WheelEventHandler.on("wheel", event => _handleScroll(event, sections));
                     WheelEventHandler.startListen();
@@ -1521,9 +1657,11 @@ var Onepage = (function () {
                         if (target?.tagName !== "INPUT" && target?.tagName !== "TEXTAREA") {
                             const section = sections.getCurrentSection();
                             if (_hasOverflowScroll(section, KeyEventHandler.getAxis("vertical"))) {
+                                // TODO: Make it work well on chrome like browsers
                                 const scrollable = section.elemRef.querySelector("." + classes.overflow);
                                 if (scrollable !== null) {
                                     KeyEventHandler.scrollWithKeys(scrollable, "vertical");
+                                    event.preventDefault();
                                 }
                             } else {
                                 _handleScroll(event, sections);
@@ -1589,12 +1727,26 @@ var Onepage = (function () {
             function _handleSlider(event, slider) {
                 if (window?.WheelEvent && event instanceof WheelEvent) return;
 
-                if (_getEventAxis(event, "horizontal") > 0) {
+                const axis = _getEventAxis(event, "horizontal");
+                if (axis > 0) {
                     slider.next();
-                } else if (_getEventAxis(event, "horizontal") < 0) {
+                } else if (axis < 0) {
                     slider.prev();
                 }
             }
+
+            function _lockScroll() {
+                _isScrolling = true;
+                if (_scrollTimer) {
+                    clearTimeout(_scrollTimer);
+                }
+
+                // Unlock scrolling after specified timeout
+                _scrollTimer = setTimeout(() => {
+                    _isScrolling = false;
+                }, settings.scroll.unlockTimeout);
+            }
+
 
             /**
              * @param event {ScrollEvent | SwipeEvent}
@@ -1602,28 +1754,24 @@ var Onepage = (function () {
              * @returns {void}
              */
             function _handleScroll(event, sections) {
+                if (_isScrolling) return;
+
+                _lockScroll();
                 const currentSection = sections.getCurrentSection();
                 if (currentSection.sliderList.length >= 1) {
                     _handleSlider(event, currentSection.sliderList[0]);
                 }
 
-                if (_isScrolling) return;
-
-                _isScrolling = true;
-                if (_getEventAxis(event, "vertical") > 0) {
+                const axis = _getEventAxis(event, "vertical");
+                if (axis > 0) {
                     if (!_hasOverflowScroll(currentSection, 1)) {
                         sections.scrollNext();
                     }
-                } else if (_getEventAxis(event, "vertical") < 0) {
+                } else if (axis < 0) {
                     if (!_hasOverflowScroll(currentSection, -1)) {
                         sections.scrollPrev();
                     }
                 }
-
-                // Unlock scrolling after specified timeout
-                setTimeout(() => {
-                    _isScrolling = false;
-                }, settings.scroll.unlockTimeout);
             }
 
             return {
@@ -1687,8 +1835,9 @@ var Onepage = (function () {
                 if (index < 0 || index >= elementList.length) return;
 
                 elementList[index].scrollIntoView({
-                    behavior: settings.scroll.behavior || "smooth",
+                    behavior: settings.scroll.behavior,
                     block: "start",
+                    inline: "center"
                 });
             }
 
@@ -1770,7 +1919,20 @@ var Onepage = (function () {
                 const sliders = utils.getSliderListInElement(section);
                 const aloneSlides = utils.getSingleSlidesInElementOrNull(section);
                 if (aloneSlides !== null) {
-                    sliderList.push(Slider(aloneSlides));
+                    let shouldAdd = (() => {
+                        for (const idx in aloneSlides) {
+                            const slideParent = aloneSlides[idx].parentElement;
+                            if (slideParent !== null) {
+                                return !utils.isSlider(/** @type {Element} */(slideParent));
+                            }
+                        }
+
+                        return true;
+                    })();
+
+                    if (shouldAdd) {
+                        sliderList.push(Slider(aloneSlides));
+                    }
                 }
 
                 sliders.forEach(slider => {
@@ -2036,14 +2198,11 @@ var Onepage = (function () {
              * @type {{ [key: string]: Array<(event: Event) => void | Promise<void>>}}
              */
             const _listeners = {
-                complete: [],
-                ready: [],
-                beforeExit: [],
-                exit: [],
+                DOMContentLoaded: [],
+                load: [],
+                beforeUnload: [],
+                unload: [],
             };
-
-            /** @type {typeof DOMLoadEventHandler.state} */
-            let state = "loading";
 
             /**
              * Add a listener for a specific event type
@@ -2083,13 +2242,16 @@ var Onepage = (function () {
                 }
             }
 
+            function _cleanInternalListeners() {
+                Object.keys(_listeners).forEach(key => _listeners[key] = []);
+            }
+
             /**
              * Handler for the DOMContentLoaded event, triggering "ready" listeners.
              * @param {Event} event - The DOMContentLoaded event object.
             */
             function _DOMContentLoadedEvent(event) {
-                state = "interactive";
-                _notifyListeners("ready", event);
+                _notifyListeners("DOMContentLoaded", event);
             }
 
             /**
@@ -2097,8 +2259,7 @@ var Onepage = (function () {
              * @param {Event} event - The load event object.
              */
             function _loadEvent(event) {
-                state = "complete";
-                _notifyListeners("complete", event);
+                _notifyListeners("load", event);
             }
 
             /**
@@ -2106,7 +2267,7 @@ var Onepage = (function () {
              * @param {Event} event - The beforeunload event object.
              */
             function _beforeUnloadEvent(event) {
-                _notifyListeners("beforeExit", event);
+                _notifyListeners("beforeUnload", event);
             }
 
             /**
@@ -2114,7 +2275,7 @@ var Onepage = (function () {
              * @param {Event} event - The unload event object.
              */
             function _unloadEvent(event) {
-                _notifyListeners("exit", event);
+                _notifyListeners("unload", event);
             }
 
             function startListen() {
@@ -2140,6 +2301,7 @@ var Onepage = (function () {
 
                 Logger.debug("DOMLoadEventHandler: Listeners [stopped]");
 
+                _cleanInternalListeners();
                 _isListen = false;
             }
 
@@ -2147,7 +2309,6 @@ var Onepage = (function () {
                 startListen,
                 stopListen,
 
-                state: state,
                 on: on,
                 off: off,
             };
@@ -2225,6 +2386,10 @@ var Onepage = (function () {
                         await listener(event);
                     }
                 }
+            }
+
+            function _cleanInternalListeners() {
+                Object.keys(_listeners).forEach(key => _listeners[key] = []);
             }
 
             /**
@@ -2315,10 +2480,17 @@ var Onepage = (function () {
                 Logger.debug("ObserverEventHandler: Listeners [started]");
             }
 
+            function _makeCleanup() {
+                _cleanInternalListeners();
+                _observer = null;
+            }
+
             function stopListen() {
                 if (_observer === null) return;
 
                 _observer.disconnect();
+                _makeCleanup();
+
                 Logger.debug("ObserverEventHandler: Listeners [stopped]");
             }
 
@@ -2435,7 +2607,7 @@ var Onepage = (function () {
 
             (function _init() {
                 DOMLoadEventHandler.startListen();
-                DOMLoadEventHandler.on("ready", async () => {
+                DOMLoadEventHandler.on("DOMContentLoaded", async () => {
                     createHeadStyles();
                     injectStylesOrThrow();
 
