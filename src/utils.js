@@ -439,6 +439,21 @@ export function isTouchDevice() {
     return (window.matchMedia && window.matchMedia("(pointer: coarse)").matches);
 }
 
+/**
+ * @param func {Function} - callback function
+ * @param delay {number} - delay in ms
+ */
+export function debounce(func, delay) {
+    /** @type {Timer}*/
+    let timer;
+
+    /** @param args {*} */
+    return (...args) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => func(...args), delay);
+    };
+}
+
 export default {
     toKebabCase: toKebabCase,
     addClassName: addClassName,
@@ -466,4 +481,5 @@ export default {
     isElementBeforeOrAfter: isElementBeforeOrAfter,
     isTouchDevice: isTouchDevice,
     inlineString: inlineString,
+    debounce: debounce
 }
