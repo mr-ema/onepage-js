@@ -73,6 +73,9 @@ const WheelEventHandler = (() => {
 
     /** @param event {WheelEvent} */
     function _handleWheel(event) {
+        _direction.y = 0;
+        _direction.x = 0;
+
         if (event.deltaY !== 0) {
             _direction.y = (event.deltaY > 0) ? 1 : -1;
         }
@@ -99,9 +102,6 @@ const WheelEventHandler = (() => {
             return 0;
         })();
 
-        _direction.y = 0;
-        _direction.x = 0;
-
         return result;
     }
 
@@ -122,6 +122,11 @@ const WheelEventHandler = (() => {
         _isListen = true;
     }
 
+    function _makeCleanup() {
+        _cleanInternalListeners();
+        _direction = { x: 0, y: 0};
+    }
+
     function stopListen() {
         if (!_isListen) return;
 
@@ -131,7 +136,7 @@ const WheelEventHandler = (() => {
 
         Logger.debug("WheelEventHandler: wheel event listeners [stoped]");
 
-        _cleanInternalListeners();
+        _makeCleanup();
         _isListen = false;
     }
 

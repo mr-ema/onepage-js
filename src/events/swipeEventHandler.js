@@ -26,8 +26,15 @@ import { isTouchDevice } from "../utils.js";
 const SwipeEventHandler = (() => {
     let _isListen = false;
 
-    let _startPos = /** @type {Vector2} */  { x: 0, y: 0 };
-    let _endPos = /** @type {Vector2} */  { x: 0, y: 0 };
+    const _pos = {
+        start: /** @type {Vector2} */  { x: 0, y: 0 },
+        end: /** @type {Vector2} */  { x: 0, y: 0 },
+
+        reset() {
+            this.start = { x: 0, y: 0 };
+            this.end = { x: 0, y: 0 };
+        }
+    }
 
     /** @type {{ [key: string]: Array<(event: SwipeEvent) => void | Promise<void>>}} */
     const _listeners = {
@@ -82,14 +89,16 @@ const SwipeEventHandler = (() => {
      * @returns {Promise<void>}
      */
     async function _handleSwipeStart(event) {
+        _pos.reset();
+
         if (window?.TouchEvent && event instanceof TouchEvent) {
-            _startPos.x = event.changedTouches[0].clientX;
-            _startPos.y = event.changedTouches[0].clientY;
+            _pos.start.x = event.changedTouches[0].clientX;
+            _pos.start.y = event.changedTouches[0].clientY;
         } else if (window?.PointerEvent && event instanceof PointerEvent) {
             const button = /** @type {MouseButton} */ (event.button);
             if (!(constants.MOUSE_SWIPE_DISCARDED_BUTTONS.includes(button))) {
-                _startPos.x = event.clientX;
-                _startPos.y = event.clientY;
+                _pos.start.x = event.clientX;
+                _pos.start.y = event.clientY;
             };
 
             Logger.debug("SwipeEventHandler: pressed mouse button code on 'swipeStart': ", [button]);
@@ -103,17 +112,14 @@ const SwipeEventHandler = (() => {
      * @returns {Promise<void>}
      */
     async function _handleSwipeMove(event) {
-        _endPos.x = 0;
-        _endPos.y = 0;
-
         if (window?.TouchEvent && event instanceof TouchEvent) {
-            _endPos.x = event.changedTouches[0].clientX;
-            _endPos.y = event.changedTouches[0].clientY;
+            _pos.end.x = event.changedTouches[0].clientX;
+            _pos.end.y = event.changedTouches[0].clientY;
         } else if (window?.PointerEvent && event instanceof PointerEvent) {
             const button = /** @type {MouseButton} */ (event.button);
             if (!(constants.MOUSE_SWIPE_DISCARDED_BUTTONS.includes(button))) {
-                _endPos.x = event.clientX;
-                _endPos.y = event.clientY;
+                _pos.end.x = event.clientX;
+                _pos.end.y = event.clientY;
             }
 
             Logger.debug("SwipeEventHandler: pressed mouse button code on 'swipeMove': ", [button]);
@@ -126,14 +132,14 @@ const SwipeEventHandler = (() => {
      */
     async function _handleSwipeEnd(event) {
         if (window?.TouchEvent && event instanceof TouchEvent) {
-            _endPos.x = event.changedTouches[0].clientX;
-            _endPos.y = event.changedTouches[0].clientY;
+            _pos.end.x = event.changedTouches[0].clientX;
+            _pos.end.y = event.changedTouches[0].clientY;
         } else if (window?.PointerEvent && event instanceof PointerEvent) {
             const button = /** @type {MouseButton} */ (event.button);
             if (!(constants.MOUSE_SWIPE_DISCARDED_BUTTONS.includes(button))) {
                 if (event.clientX !== 0 || event.clientY !== 0) {
-                    _endPos.x = event.clientX;
-                    _endPos.y = event.clientY;
+                    _pos.end.x = event.clientX;
+                    _pos.end.y = event.clientY;
                 }
             }
 
@@ -145,15 +151,10 @@ const SwipeEventHandler = (() => {
 
     /** @type {typeof SwipeEventHandler.getAxis} */
     function getAxis(direction = "vertical") {
-        const diffX = _endPos.x - _startPos.x;
-        const diffY = _endPos.y - _startPos.y;
+        const diffX = _pos.end.x - _pos.start.x;
+        const diffY = _pos.end.y - _pos.start.y;
 
         if (diffX === 0 && diffY === 0) return 0;
-
-        _startPos.x = 0;
-        _startPos.y = 0;
-        _endPos.x = 0;
-        _endPos.y = 0;
 
         if (Math.abs(diffX) > Math.abs(diffY)) {
             if (Math.abs(diffX) >= constants.TOUCH_THRESHOLD && direction === "horizontal") {
@@ -202,6 +203,11 @@ const SwipeEventHandler = (() => {
         _isListen = true;
     }
 
+    function _makeCleanup() {
+        _cleanInternalListeners();
+        _pos.reset();
+    }
+
     function stopListen() {
         if (!_isListen) return;
 
@@ -225,7 +231,7 @@ const SwipeEventHandler = (() => {
             Logger.debug("SwipeEventHandler: touch event listeners [stopped]");
         }
 
-        _cleanInternalListeners();
+        _makeCleanup();
         _isListen = false;
     }
 

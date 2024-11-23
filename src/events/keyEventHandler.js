@@ -24,6 +24,16 @@ import settings from "../settings.js";
 const KeyEventHandler = (() => {
     let _isListen = false;
 
+    let _keys = {
+        lastKey: "",
+        axisKey: "", // special variable only to hold axis related stuff
+
+        reset() {
+            this.lastKey = "";
+            this.axisKey = "";
+        }
+    }
+
     /**
      * @type {{ [key: string]: Array<(event: KeyboardEvent) => void | Promise<void>>}}
      */
@@ -31,11 +41,6 @@ const KeyEventHandler = (() => {
         keydown: [],
         keyup: [],
     };
-
-    let _lastKey = "";
-
-    // special variable only to hold axis related stuff
-    let _axisKey = "";
 
     /**
      * @param element {Element}
@@ -45,20 +50,14 @@ const KeyEventHandler = (() => {
     function scrollWithKeys(element, direction = "vertical") {
         if (element.scrollHeight === 0 && element.scrollWidth === 0) return;
 
-        const { speed, behavior } = settings.scroll;
+        const { speed } = settings.scroll;
 
         if (direction === "vertical") {
-            const offsetTop = element.scrollTop;
-            element.scroll({
-                top: (getAxis(direction) * speed) + offsetTop,
-                behavior: behavior
-            })
+            const targetScroll = (getAxis(direction) * speed) + element.scrollTop;
+            element.scroll({ top: targetScroll });
         } else if (direction === "horizontal") {
-            const offsetLeft = element.scrollLeft;
-            element.scroll({
-                left: (getAxis(direction) * speed) + offsetLeft,
-                behavior: behavior
-            })
+            const targetScroll = (getAxis(direction) * speed) + element.scrollLeft;
+            element.scroll({ left: targetScroll });
         }
 
         Logger.debug(`KeyEventHandler: scroll with keys called with speed '${speed}' on element`, [element]);
@@ -111,8 +110,8 @@ const KeyEventHandler = (() => {
      * @returns {Promise<void>}
      */
     async function _keydownEventHandler(event) {
-        _lastKey = event.key;
-        _axisKey = event.key;
+        _keys.lastKey = event.key;
+        _keys.axisKey = event.key;
 
         _notifyListeners("keydown", event);
     }
@@ -122,8 +121,8 @@ const KeyEventHandler = (() => {
      * @returns {Promise<void>}
      */
     async function _keyupEventHandler(event) {
-        if (event.key === _axisKey) {
-            _axisKey = "";
+        if (event.key === _keys.axisKey) {
+            _keys.axisKey = "";
         }
 
         _notifyListeners("keyup", event);
@@ -132,11 +131,11 @@ const KeyEventHandler = (() => {
     /** @type {typeof KeyEventHandler.getAxis } */
     function getAxis(direction = "vertical") {
         if (direction === "vertical") {
-            if (settings.keybindings.up.includes(_axisKey)) return -1;
-            if (settings.keybindings.down.includes(_axisKey)) return 1;
+            if (settings.keybindings.up.includes(_keys.axisKey)) return -1;
+            if (settings.keybindings.down.includes(_keys.axisKey)) return 1;
         } else if (direction === "horizontal") {
-            if (settings.keybindings.right.includes(_axisKey)) return 1;
-            if (settings.keybindings.left.includes(_axisKey)) return -1;
+            if (settings.keybindings.right.includes(_keys.axisKey)) return 1;
+            if (settings.keybindings.left.includes(_keys.axisKey)) return -1;
         }
 
         return 0;
@@ -160,6 +159,11 @@ const KeyEventHandler = (() => {
         _isListen = true;
     }
 
+    function _makeCleanup() {
+        _cleanInternalListeners();
+        _keys.reset();
+    }
+
     function stopListen() {
         if (!_isListen) return;
 
@@ -170,10 +174,7 @@ const KeyEventHandler = (() => {
             Logger.debug("KeyEventHandler: key event listeners [stopped]");
         }
 
-        _cleanInternalListeners();
-        _lastKey = "";
-        _axisKey = "";
-
+        _makeCleanup();
         _isListen = false;
     }
 

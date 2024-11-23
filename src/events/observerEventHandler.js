@@ -169,11 +169,16 @@ const ObserverEventHandler = (() => {
         Logger.debug("ObserverEventHandler: Listeners [started]");
     }
 
+    function _makeCleanup() {
+        _cleanInternalListeners();
+        _observer = null;
+    }
+
     function stopListen() {
         if (_observer === null) return;
 
         _observer.disconnect();
-        _cleanInternalListeners();
+        _makeCleanup();
 
         Logger.debug("ObserverEventHandler: Listeners [stopped]");
     }
