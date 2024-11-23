@@ -22,6 +22,8 @@ import KeyEventHandler from "./events/keyEventHandler.js";
 
 
 const scroll = (() => {
+    /** @type {Timer} */
+    let _scrollTimer;
     let _isScrolling = false;
 
     /**
@@ -29,7 +31,6 @@ const scroll = (() => {
      * @returns {void}
      */
     function init(sections) {
-
         if (WheelEventHandler.isEventAvailable()) {
             WheelEventHandler.on("wheel", event => _handleScroll(event, sections));
             WheelEventHandler.startListen();
@@ -41,9 +42,11 @@ const scroll = (() => {
                 if (target?.tagName !== "INPUT" && target?.tagName !== "TEXTAREA") {
                     const section = sections.getCurrentSection();
                     if (_hasOverflowScroll(section, KeyEventHandler.getAxis("vertical"))) {
+                        // TODO: Make it work well on chrome like browsers
                         const scrollable = section.elemRef.querySelector("." + classes.overflow);
                         if (scrollable !== null) {
                             KeyEventHandler.scrollWithKeys(scrollable, "vertical");
+                            event.preventDefault()
                         }
                     } else {
                         _handleScroll(event, sections)
@@ -117,20 +120,33 @@ const scroll = (() => {
         }
     }
 
+    function _lockScroll() {
+        _isScrolling = true;
+        if (_scrollTimer) {
+            clearTimeout(_scrollTimer);
+        }
+
+        // Unlock scrolling after specified timeout
+        _scrollTimer = setTimeout(() => {
+            _isScrolling = false;
+        }, settings.scroll.unlockTimeout);
+    }
+
+
     /**
      * @param event {ScrollEvent | SwipeEvent}
      * @param sections {SectionList}
      * @returns {void}
      */
     function _handleScroll(event, sections) {
+        if (_isScrolling) return;
+
+        _lockScroll();
         const currentSection = sections.getCurrentSection();
         if (currentSection.sliderList.length >= 1) {
             _handleSlider(event, currentSection.sliderList[0]);
         }
 
-        if (_isScrolling) return;
-
-        _isScrolling = true;
         const axis = _getEventAxis(event, "vertical");
         if (axis > 0) {
             if (!_hasOverflowScroll(currentSection, 1)) {
@@ -141,11 +157,6 @@ const scroll = (() => {
                 sections.scrollPrev();
             }
         }
-
-        // Unlock scrolling after specified timeout
-        setTimeout(() => {
-            _isScrolling = false;
-        }, settings.scroll.unlockTimeout);
     }
 
     return {
